@@ -8,7 +8,7 @@ const pillars = [
     icon: GraduationCap,
     title: "Formation continue",
     description:
-      "Constamment formée aux dernières pratiques et protocoles de soins pour vous garantir des prestations à la pointe.",
+      "Constamment formé aux dernières pratiques et protocoles de soins pour vous garantir des prestations à la pointe.",
   },
   {
     icon: UserCheck,

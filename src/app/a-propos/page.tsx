@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "À propos",
   description:
-    "Découvrez Edem-Care et sa fondatrice, infirmière diplômée offrant des soins à domicile de qualité à Bruxelles.",
+    "Découvrez Edem-Care et son fondateur, infirmier diplômé offrant des soins à domicile de qualité à Bruxelles.",
 };
 
 export default function AProposPage() {

@@ -155,7 +155,7 @@ export function Hero() {
                   </div>
                   <Image
                     src="/hero-medical-team.svg"
-                    alt="Illustration d'une infirmiere et d'un patient dans un cadre de soins a domicile"
+                    alt="Illustration d'un infirmier et d'un patient dans un cadre de soins à domicile"
                     width={720}
                     height={760}
                     preload

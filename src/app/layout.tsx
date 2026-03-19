@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     "soins infirmiers",
     "domicile",
     "Bruxelles",
-    "infirmière",
+    "infirmier",
     "soins à domicile",
     "nursing care",
     "home care",

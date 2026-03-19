@@ -66,8 +66,8 @@ export function Footer() {
               <span className="font-heading text-2xl font-bold">Edem-Care</span>
             </div>
             <p className="mt-4 text-sm leading-7 text-blue-100/76">
-              Soins infirmiers professionnels a domicile a Bruxelles, avec une approche
-              attentive, claire et bienveillante.
+              Soins infirmiers professionnels à domicile à Bruxelles, avec un accompagnement
+              attentif, clair et bienveillant.
             </p>
           </div>
 

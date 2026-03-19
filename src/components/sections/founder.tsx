@@ -29,7 +29,7 @@ export function Founder() {
             <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
               <div className="relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-[1.6rem] bg-[linear-gradient(145deg,#eff7ff_0%,#d7ebff_100%)]">
                 <div className="absolute left-6 top-6 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700 shadow-sm">
-                  Fondatrice
+                  Fondateur
                 </div>
                 <div className="absolute right-6 top-6 flex h-16 w-16 items-center justify-center rounded-3xl bg-white/75 text-forest shadow-sm">
                   <Stethoscope className="h-7 w-7" />
@@ -41,10 +41,10 @@ export function Founder() {
                     </span>
                   </div>
                   <p className="mt-5 text-base font-semibold text-ink">
-                    Infirmiere diplomee
+                    Infirmier diplômé
                   </p>
                   <p className="mt-2 text-sm text-muted-custom">
-                    Une presence professionnelle, attentive et rassurante.
+                    Une présence professionnelle, attentive et rassurante.
                   </p>
                 </div>
               </div>
@@ -87,18 +87,18 @@ export function Founder() {
               A propos
             </span>
             <h2 className="mt-4 font-heading text-3xl font-bold text-ink sm:text-4xl lg:text-5xl">
-              Une infirmiere engagee pour des soins fiables et une relation humaine.
+              Un infirmier engagé pour des soins fiables et une relation humaine.
             </h2>
 
             <div className="mt-6 space-y-4 text-base leading-7 text-muted-custom">
               <p>
-                Fondatrice d&apos;Edem-Care, je suis infirmière diplômée avec
+                Fondateur d&apos;Edem-Care, je suis infirmier diplômé avec
                 plusieurs années d&apos;expérience en milieu hospitalier et à
                 domicile. Ma vocation est d&apos;offrir des soins de qualité
                 dans le confort et la sécurité de votre foyer.
               </p>
               <p>
-                Formée aux dernières techniques de soins et en formation
+                Formé aux dernières techniques de soins et en formation
                 continue, je m&apos;engage à vous proposer un accompagnement
                 personnalisé, respectueux et professionnel. Chaque patient est
                 unique et mérite une attention particulière.
