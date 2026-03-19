@@ -17,9 +17,9 @@ import {
 import { Button } from "@/components/ui/button";
 
 const trustMetrics = [
-  { value: "7j/7", label: "Disponibilite pour les soins urgents" },
-  { value: "500+", label: "Visites realisees a domicile" },
-  { value: "< 24h", label: "Delai moyen de prise en charge" },
+  { value: "7j/7", label: "Disponibilité pour les soins urgents" },
+  { value: "500+", label: "Visites réalisées à domicile" },
+  { value: "< 24h", label: "Délai moyen de prise en charge" },
 ];
 
 const serviceHighlights = [
@@ -65,7 +65,7 @@ export function Hero() {
               >
                 <span className="inline-flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.8)]" />
-                  Soins infirmiers a domicile a Bruxelles
+                  Soins infirmiers à domicile à Bruxelles
                 </span>
                 <span className="hidden h-4 w-px bg-white/20 sm:block" />
                 <span className="inline-flex items-center gap-2 text-white/80">
@@ -147,7 +147,7 @@ export function Hero() {
               <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-[linear-gradient(180deg,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.08)_100%)] p-4 shadow-2xl backdrop-blur">
                 <div className="rounded-[1.6rem] bg-[linear-gradient(180deg,#f5fbff_0%,#dcedff_100%)] px-4 pt-6">
                   <div className="mb-4 flex items-center justify-between rounded-full bg-white/90 px-4 py-2 text-xs font-medium uppercase tracking-[0.24em] text-forest shadow-sm">
-                    <span>Soins a domicile</span>
+                    <span>Soins à domicile</span>
                     <span className="inline-flex items-center gap-2 text-cyan-600">
                       <HeartPulse className="h-4 w-4" />
                       Disponible
@@ -201,7 +201,7 @@ export function Hero() {
                 </div>
                 <div className="mt-3 flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs text-muted-custom">
                   <Clock3 className="h-4 w-4 text-cyan-600" />
-                  Reponse sous 24h pour les demandes standards
+                  Réponse sous 24h pour les demandes standards
                 </div>
               </div>
             </motion.div>
@@ -269,7 +269,7 @@ export function Hero() {
             <Clock3 className="h-5 w-5 text-cyan-600" />
             <p className="mt-3 font-semibold">Disponibilite et reactivite</p>
             <p className="mt-1 text-sm leading-6 text-muted-custom">
-              Reponse claire pour les besoins planifies ou urgents.
+                  Réponse claire pour les besoins planifiés ou urgents.
             </p>
           </div>
         </motion.div>

@@ -40,15 +40,21 @@ export function Contact() {
 
   const onSubmit = (data: ContactFormData) => {
     startTransition(async () => {
-      const result = await submitContact(data);
-      if (result.success) {
-        toast.success("Message envoyé avec succès !", {
-          description: "Nous vous répondrons dans les plus brefs délais.",
-        });
-        reset();
-      } else {
+      try {
+        const result = await submitContact(data);
+        if (result.success) {
+          toast.success("Message envoyé avec succès !", {
+            description: "Nous vous répondrons dans les plus brefs délais.",
+          });
+          reset();
+        } else {
+          toast.error("Erreur lors de l'envoi", {
+            description: result.error || "Veuillez réessayer plus tard.",
+          });
+        }
+      } catch {
         toast.error("Erreur lors de l'envoi", {
-          description: result.error || "Veuillez réessayer plus tard.",
+          description: "Veuillez réessayer plus tard.",
         });
       }
     });
@@ -86,14 +92,14 @@ export function Contact() {
             className="rounded-[2rem] bg-[linear-gradient(180deg,#0b4da2_0%,#0f67cc_100%)] p-6 text-white shadow-[0_24px_60px_rgba(11,77,162,0.2)] lg:p-8"
           >
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-100">
-              Coordonnees
+              Coordonnées
             </p>
             <h3 className="mt-4 font-heading text-3xl font-bold">
-              Une reponse rapide pour organiser vos soins.
+              Une réponse rapide pour organiser vos soins.
             </h3>
             <p className="mt-4 text-sm leading-7 text-blue-100/82">
-              Nous vous aidons a clarifier la demande, le type de soins et les
-              prochaines etapes avant la prise en charge.
+              Nous vous aidons à clarifier la demande, le type de soins et les
+              prochaines étapes avant la prise en charge.
             </p>
             <div className="mt-6 space-y-4">
             {[

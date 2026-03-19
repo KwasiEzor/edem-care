@@ -44,7 +44,7 @@ export function Navbar() {
           <div className="hidden items-center justify-between border-b border-slate-200/80 px-5 py-2 text-xs text-muted-custom lg:flex">
             <div className="inline-flex items-center gap-2 font-medium text-forest">
               <Sparkles className="h-3.5 w-3.5" />
-              Soins infirmiers a domicile a Bruxelles et environs
+              Soins infirmiers à domicile à Bruxelles et environs
             </div>
             <div className="flex items-center gap-4">
               <a href="tel:+32000000000" className="transition-colors hover:text-forest">
@@ -66,7 +66,7 @@ export function Navbar() {
                   Edem-Care
                 </span>
                 <span className="mt-1 hidden text-xs uppercase tracking-[0.24em] text-muted-custom sm:block">
-                  Soins a domicile
+                  Soins à domicile
                 </span>
               </div>
             </Link>

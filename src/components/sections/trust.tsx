@@ -31,9 +31,9 @@ const pillars = [
 ];
 
 const metrics = [
-  { value: "7j/7", label: "Disponibilite pour organiser les soins" },
-  { value: "Humain", label: "Accompagnement centre sur le patient" },
-  { value: "Coordonne", label: "Lien avec medecins et proches" },
+  { value: "7j/7", label: "Disponibilité pour organiser les soins" },
+  { value: "Humain", label: "Accompagnement centré sur le patient" },
+  { value: "Coordonné", label: "Lien avec médecins et proches" },
 ];
 
 const containerVariants = {

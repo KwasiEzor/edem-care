@@ -24,7 +24,7 @@ export default function Home() {
               <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
                 <div>
                   <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm font-semibold uppercase tracking-[0.22em] text-cyan-100">
-                    Besoin de soins infirmiers a domicile ?
+                    Besoin de soins infirmiers à domicile ?
                   </span>
                   <h2 className="mt-4 font-heading text-3xl font-bold sm:text-4xl lg:text-5xl">
                     Organisons une prise en charge claire et rassurante.

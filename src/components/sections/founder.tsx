@@ -52,7 +52,7 @@ export function Founder() {
                 <div className="rounded-[1.4rem] bg-slate-50 p-4">
                   <p className="text-2xl font-bold text-ink">Soins</p>
                   <p className="mt-1 text-sm text-muted-custom">
-                    Precis, humains et adaptes a domicile.
+                    Précis, humains et adaptés à domicile.
                   </p>
                 </div>
                 <div className="rounded-[1.4rem] bg-slate-50 p-4">
@@ -112,7 +112,7 @@ export function Founder() {
                 compétence et de chaleur humaine.&rdquo;
               </p>
               <p className="mt-4 text-sm font-medium text-muted-custom">
-                Edem-Care, soins infirmiers a domicile
+                Edem-Care, soins infirmiers à domicile
               </p>
             </div>
 

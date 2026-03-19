@@ -17,8 +17,8 @@ export function Footer() {
                 Un accompagnement infirmier rassurant, chez vous.
               </h2>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-blue-100/82 sm:text-base">
-                Soins a domicile, suivi coordonne et interventions avec une attention
-                reelle a votre confort, votre rythme et votre securite.
+                Soins à domicile, suivi coordonné et interventions avec une attention
+                réelle à votre confort, votre rythme et votre sécurité.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
@@ -43,14 +43,14 @@ export function Footer() {
                 <Clock3 className="h-5 w-5 text-cyan-200" />
                 <p className="mt-4 text-lg font-semibold">Disponibilite 7j/7</p>
                 <p className="mt-2 text-sm leading-6 text-blue-100/78">
-                  Reponse rapide pour organiser les soins et orienter votre demande.
+                  Réponse rapide pour organiser les soins et orienter votre demande.
                 </p>
               </div>
               <div className="rounded-[1.5rem] border border-white/12 bg-white/10 p-5">
                 <MapPin className="h-5 w-5 text-cyan-200" />
                 <p className="mt-4 text-lg font-semibold">Bruxelles et environs</p>
                 <p className="mt-2 text-sm leading-6 text-blue-100/78">
-                  Intervention a domicile avec un suivi adapte a votre situation.
+                  Intervention à domicile avec un suivi adapté à votre situation.
                 </p>
               </div>
             </div>
