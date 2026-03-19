@@ -12,6 +12,7 @@ const navLinks = [
   { href: "/a-propos", label: "À propos" },
   { href: "/#confiance", label: "Confiance" },
   { href: "/contact", label: "Contact" },
+  { href: "/mon-espace", label: "Mon espace" },
 ];
 
 export function Navbar() {
