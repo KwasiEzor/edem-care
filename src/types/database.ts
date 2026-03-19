@@ -94,3 +94,27 @@ export interface Notification {
   data: Record<string, unknown> | null;
   created_at: string;
 }
+
+export interface PageView {
+  id: string;
+  page_path: string;
+  referrer_origin: string | null;
+  session_hash: string | null;
+  created_at: string;
+}
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+}
+
+export interface ChatTranscript {
+  id: string;
+  session_id: string;
+  messages: ChatMessage[];
+  care_type_suggested: string | null;
+  booking_intent: boolean;
+  created_at: string;
+  updated_at: string;
+}

@@ -1,7 +1,19 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimit } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
+  // Rate limit by IP
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const { allowed } = rateLimit(ip, "slots", 30, 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Trop de demandes. Réessayez plus tard." },
+      { status: 429 }
+    );
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const date = searchParams.get("date");
 

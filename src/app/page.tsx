@@ -5,6 +5,7 @@ import { Hero } from "@/components/sections/hero";
 import { Services } from "@/components/sections/services";
 import { Trust } from "@/components/sections/trust";
 import { Founder } from "@/components/sections/founder";
+import { CareTimeline } from "@/components/sections/care-timeline";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Phone } from "lucide-react";
 
@@ -15,6 +16,7 @@ export default function Home() {
       <main>
         <Hero />
         <Services />
+        <CareTimeline />
         <Founder />
         <Trust />
 

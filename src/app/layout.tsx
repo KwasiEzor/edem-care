@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { CookieBanner } from "@/components/layout/cookie-banner";
+import { TrackingProvider } from "@/components/providers/tracking-provider";
+import { ChatProvider } from "@/components/chat/chat-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
@@ -94,7 +96,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <TooltipProvider>
-          {children}
+          <TrackingProvider>
+            {children}
+          </TrackingProvider>
+          <ChatProvider />
           <CookieBanner />
           <Toaster richColors position="top-right" />
         </TooltipProvider>

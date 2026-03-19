@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { BookingWizard } from "@/components/booking/booking-wizard";
@@ -43,7 +44,9 @@ export default function RendezVousPage() {
           </div>
 
           <div className="mt-10">
-            <BookingWizard />
+            <Suspense>
+              <BookingWizard />
+            </Suspense>
           </div>
         </div>
       </main>

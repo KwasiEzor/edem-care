@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { AdminHeader } from "@/components/admin/admin-header";
+import { DashboardCharts } from "@/components/admin/dashboard-charts";
+import { AnalyticsCharts } from "@/components/admin/analytics-charts";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   CalendarDays,
@@ -15,6 +17,9 @@ async function getDashboardData() {
   const supabase = await createClient();
 
   const today = new Date().toISOString().split("T")[0];
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  const cutoff = ninetyDaysAgo.toISOString().split("T")[0];
 
   const [
     { count: totalBookings },
@@ -23,6 +28,7 @@ async function getDashboardData() {
     { count: unreadContacts },
     { count: totalPatients },
     { data: recentActivity },
+    { data: chartBookings },
   ] = await Promise.all([
     supabase
       .from("bookings")
@@ -47,6 +53,10 @@ async function getDashboardData() {
       .select("*")
       .order("created_at", { ascending: false })
       .limit(8),
+    supabase
+      .from("bookings")
+      .select("date, care_type, status, created_at")
+      .gte("created_at", cutoff),
   ]);
 
   return {
@@ -56,6 +66,7 @@ async function getDashboardData() {
     unreadContacts: unreadContacts || 0,
     totalPatients: totalPatients || 0,
     recentActivity: recentActivity || [],
+    chartBookings: chartBookings || [],
   };
 }
 
@@ -127,6 +138,16 @@ export default async function AdminDashboardPage() {
             </Card>
           </Link>
         ))}
+      </div>
+
+      {/* Booking Charts */}
+      <div className="mb-8">
+        <DashboardCharts bookings={data.chartBookings} />
+      </div>
+
+      {/* Visitor Analytics */}
+      <div className="mb-8">
+        <AnalyticsCharts />
       </div>
 
       {/* Recent Activity */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Check, Clock, FileText, User } from "lucide-react";
 import { DateStep } from "./date-step";
@@ -26,8 +27,12 @@ export type BookingData = {
 };
 
 export function BookingWizard() {
+  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
-  const [bookingData, setBookingData] = useState<Partial<BookingData>>({});
+  const [bookingData, setBookingData] = useState<Partial<BookingData>>(() => {
+    const careType = searchParams.get("care_type");
+    return careType ? { care_type: careType } : {};
+  });
   const [isComplete, setIsComplete] = useState(false);
 
   const updateData = (data: Partial<BookingData>) => {

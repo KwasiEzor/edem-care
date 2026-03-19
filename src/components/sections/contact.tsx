@@ -239,7 +239,7 @@ export function Contact() {
                     <div className="space-y-2">
                       <Label htmlFor="care_type">Type de soins</Label>
                       <Select
-                        onValueChange={(value) => value && setValue("care_type", String(value))}
+                        onValueChange={(value) => value && setValue("care_type", value as ContactFormData["care_type"])}
                       >
                         <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-slate-50/70 px-4">
                           <SelectValue placeholder="Sélectionnez" />

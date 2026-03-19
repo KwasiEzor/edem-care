@@ -1,6 +1,6 @@
 import { bookingCancelSchema, bookingUpdateSchema } from "@/lib/validations";
 import { createClient as createServerSupabaseClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const AVAILABLE_SLOTS_RPC = "get_available_slots";
 
@@ -46,7 +46,7 @@ export async function GET() {
   return NextResponse.json({ bookings: data ?? [] });
 }
 
-export async function PATCH() {
+export async function PATCH(request: NextRequest) {
   const sessionResult = await ensureSession();
   if ("status" in sessionResult) {
     return sessionResult;
@@ -166,7 +166,7 @@ export async function PATCH() {
   return NextResponse.json({ booking: updated });
 }
 
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
   const sessionResult = await ensureSession();
   if ("status" in sessionResult) {
     return sessionResult;
