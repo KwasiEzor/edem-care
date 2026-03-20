@@ -4,6 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 const AVAILABLE_SLOTS_RPC = "get_available_slots";
 
+/** Normalize "HH:MM:SS" or "HH:MM" → "HH:MM" for comparison */
+function toHHMM(t: string) {
+  return t.slice(0, 5);
+}
+
 async function ensureSession() {
   const supabase = await createServerSupabaseClient();
   const {
@@ -103,8 +108,8 @@ export async function PATCH(request: NextRequest) {
   if (wantsSlotUpdate) {
     const isSameSlot =
       booking.date === date &&
-      booking.time_slot_start === time_slot_start &&
-      booking.time_slot_end === time_slot_end;
+      toHHMM(booking.time_slot_start) === toHHMM(time_slot_start!) &&
+      toHHMM(booking.time_slot_end) === toHHMM(time_slot_end!);
 
     if (!isSameSlot) {
       const { data: slots, error: slotsError } = await supabase.rpc(
@@ -124,7 +129,7 @@ export async function PATCH(request: NextRequest) {
 
       const slotIsAvailable = (slots ?? []).some(
         (slot: { start_time: string }) =>
-          slot.start_time === time_slot_start
+          toHHMM(slot.start_time) === toHHMM(time_slot_start!)
       );
 
       if (!slotIsAvailable) {
