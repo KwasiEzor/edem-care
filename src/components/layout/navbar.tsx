@@ -107,7 +107,7 @@ export function Navbar() {
             </div>
 
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger className="inline-flex size-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-ink shadow-sm transition-colors hover:bg-slate-50 lg:hidden">
+              <SheetTrigger aria-label="Ouvrir le menu de navigation" className="inline-flex size-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-ink shadow-sm transition-colors hover:bg-slate-50 lg:hidden">
                 {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </SheetTrigger>
               <SheetContent side="right" className="w-[320px] border-l border-slate-200 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] px-6">

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Phone, Mail, MapPin, Send, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+
 import { toast } from "sonner";
 import { CARE_TYPE_LABELS } from "@/types/database";
 import { useTransition } from "react";
@@ -64,13 +64,7 @@ export function Contact() {
     <section id="contact" className="relative overflow-hidden py-20 lg:py-28">
       <div className="absolute inset-x-0 top-0 h-64 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.12),transparent_30%),radial-gradient(circle_at_top_right,rgba(6,182,212,0.08),transparent_22%)]" />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.5 }}
-          className="max-w-2xl"
-        >
+        <div className="max-w-2xl animate-fade-in-up">
           <span className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">
             Contact
           </span>
@@ -81,16 +75,10 @@ export function Contact() {
             Une question, une demande de renseignements ? N&apos;hésitez pas à
             nous écrire, nous vous répondrons rapidement.
           </p>
-        </motion.div>
+        </div>
 
         <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-10">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.5 }}
-            className="rounded-[2rem] bg-[linear-gradient(180deg,#0b4da2_0%,#0f67cc_100%)] p-6 text-white shadow-[0_24px_60px_rgba(11,77,162,0.2)] lg:p-8"
-          >
+          <div className="animate-fade-in-left rounded-[2rem] bg-[linear-gradient(180deg,#0b4da2_0%,#0f67cc_100%)] p-6 text-white shadow-[0_24px_60px_rgba(11,77,162,0.2)] lg:p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-100">
               Coordonnées
             </p>
@@ -155,14 +143,9 @@ export function Contact() {
                 et toute information utile pour preparer la prise en charge.
               </p>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
+          <div className="animate-fade-in-up [animation-delay:100ms]">
             <Card className="rounded-[2rem] border border-slate-200 bg-white/92 shadow-[0_24px_60px_rgba(15,23,42,0.07)] backdrop-blur-sm">
               <CardContent className="p-6 lg:p-8">
                 <div className="mb-8">
@@ -288,7 +271,7 @@ export function Contact() {
                 </form>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

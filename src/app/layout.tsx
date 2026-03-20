@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
-import { CookieBanner } from "@/components/layout/cookie-banner";
+import { LazyCookieBanner } from "@/components/layout/lazy-cookie-banner";
 import { TrackingProvider } from "@/components/providers/tracking-provider";
 import { ChatProvider } from "@/components/chat/chat-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -100,7 +100,7 @@ export default function RootLayout({
             {children}
           </TrackingProvider>
           <ChatProvider />
-          <CookieBanner />
+          <LazyCookieBanner />
           <Toaster richColors position="top-right" />
         </TooltipProvider>
       </body>
