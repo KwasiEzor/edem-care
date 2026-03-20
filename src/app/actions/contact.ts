@@ -3,6 +3,7 @@
 import { contactFormSchema, type ContactFormData } from "@/lib/validations";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { escapeHtml } from "@/lib/utils";
+import { getSettings } from "@/lib/settings";
 import { rateLimit } from "@/lib/rate-limit";
 import { headers } from "next/headers";
 
@@ -50,8 +51,9 @@ export async function submitContact(data: ContactFormData) {
     }
 
     // Send admin notification email
+    const settings = await getSettings();
     try {
-      if (process.env.RESEND_API_KEY) {
+      if (settings.notify_email_new_contact && process.env.RESEND_API_KEY) {
         const { Resend } = await import("resend");
         const resend = new Resend(process.env.RESEND_API_KEY);
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateAIResponse } from "@/lib/ai/chat-service";
+import { getSettings } from "@/lib/settings";
 import {
   sendWhatsAppMessage,
   markMessageAsRead,
@@ -121,19 +122,23 @@ async function processIncomingMessage(msg: ExtractedMessage) {
         await generateAndSendAIReply(conversation.id, messages, msg.from);
       }
     } else {
-      // Create new conversation
+      // Create new conversation with AI default from settings
+      const settings = await getSettings();
+      const aiActive = settings.whatsapp_ai_auto_reply;
+
       const { data: newConv } = await supabase
         .from("whatsapp_conversations")
         .insert({
           phone_number: msg.from,
           contact_name: msg.contactName,
           messages: [patientMessage],
+          is_ai_active: aiActive,
           last_message_at: now,
         })
         .select("id")
         .single();
 
-      if (newConv) {
+      if (newConv && aiActive) {
         await generateAndSendAIReply(newConv.id, [patientMessage], msg.from);
       }
     }

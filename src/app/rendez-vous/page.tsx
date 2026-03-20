@@ -2,7 +2,10 @@ import { Suspense } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { BookingWizard } from "@/components/booking/booking-wizard";
+import { getSettings } from "@/lib/settings";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Prendre rendez-vous",
@@ -10,7 +13,8 @@ export const metadata: Metadata = {
     "Réservez votre rendez-vous pour des soins infirmiers à domicile à Bruxelles avec Edem-Care.",
 };
 
-export default function RendezVousPage() {
+export default async function RendezVousPage() {
+  const settings = await getSettings();
   return (
     <>
       <Navbar />
@@ -45,7 +49,10 @@ export default function RendezVousPage() {
 
           <div className="mt-10">
             <Suspense>
-              <BookingWizard />
+              <BookingWizard
+                maxDays={settings.booking_max_days_ahead}
+                allowSundays={settings.booking_allow_sundays}
+              />
             </Suspense>
           </div>
         </div>

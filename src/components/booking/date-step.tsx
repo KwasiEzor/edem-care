@@ -9,10 +9,12 @@ import { createClient } from "@/lib/supabase/client";
 
 interface DateStepProps {
   selectedDate?: string;
+  maxDays?: number;
+  allowSundays?: boolean;
   onSelect: (date: string) => void;
 }
 
-export function DateStep({ selectedDate, onSelect }: DateStepProps) {
+export function DateStep({ selectedDate, maxDays = 60, allowSundays = false, onSelect }: DateStepProps) {
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [selected, setSelected] = useState<Date | undefined>(
     selectedDate ? new Date(selectedDate) : undefined
@@ -33,15 +35,15 @@ export function DateStep({ selectedDate, onSelect }: DateStepProps) {
   }, []);
 
   const today = startOfDay(new Date());
-  const maxDate = addDays(today, 60);
+  const maxDate = addDays(today, maxDays);
 
   const isDateDisabled = (date: Date) => {
     // Past dates
     if (isBefore(date, today)) return true;
-    // Beyond 60 days
+    // Beyond max days
     if (date > maxDate) return true;
     // Sundays (0)
-    if (date.getDay() === 0) return true;
+    if (!allowSundays && date.getDay() === 0) return true;
     // Blocked dates
     if (
       blockedDates.some(
@@ -63,7 +65,7 @@ export function DateStep({ selectedDate, onSelect }: DateStepProps) {
             Choisissez une date
           </h2>
           <p className="mt-2 text-sm leading-6 text-muted-custom">
-            Selectionnez un jour disponible dans les 60 prochains jours.
+            Sélectionnez un jour disponible dans les {maxDays} prochains jours.
           </p>
         </div>
 
@@ -86,7 +88,9 @@ export function DateStep({ selectedDate, onSelect }: DateStepProps) {
         </div>
 
         <div className="mt-5 rounded-[1.4rem] bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
-          Les dimanches et les dates bloquees ne sont pas disponibles.
+          {allowSundays
+            ? "Les dates bloquées ne sont pas disponibles."
+            : "Les dimanches et les dates bloquées ne sont pas disponibles."}
         </div>
       </CardContent>
     </Card>

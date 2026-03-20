@@ -1,12 +1,15 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { bookingFormSchema } from "@/lib/validations";
 import { escapeHtml } from "@/lib/utils";
+import { getSettings } from "@/lib/settings";
 import { rateLimit } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     // Rate limit by IP
+    const settings = await getSettings();
+
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
       "unknown";
@@ -48,15 +51,15 @@ export async function POST(request: NextRequest) {
     }
 
     const maxDate = new Date(today);
-    maxDate.setDate(maxDate.getDate() + 60);
+    maxDate.setDate(maxDate.getDate() + settings.booking_max_days_ahead);
     if (bookingDate > maxDate) {
       return NextResponse.json(
-        { error: "La date ne peut pas dépasser 60 jours" },
+        { error: `La date ne peut pas dépasser ${settings.booking_max_days_ahead} jours` },
         { status: 400 }
       );
     }
 
-    if (bookingDate.getDay() === 0) {
+    if (!settings.booking_allow_sundays && bookingDate.getDay() === 0) {
       return NextResponse.json(
         { error: "Les rendez-vous ne sont pas disponibles le dimanche" },
         { status: 400 }
@@ -109,7 +112,7 @@ export async function POST(request: NextRequest) {
 
     // Send admin notification
     try {
-      if (process.env.RESEND_API_KEY) {
+      if (settings.notify_email_new_booking && process.env.RESEND_API_KEY) {
         const { Resend } = await import("resend");
         const resend = new Resend(process.env.RESEND_API_KEY);
 

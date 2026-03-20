@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateAIResponse } from "@/lib/ai/chat-service";
+import { getSettings } from "@/lib/settings";
 import { rateLimit } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -43,6 +44,14 @@ export async function POST(request: NextRequest) {
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
         { error: "Service de chat indisponible" },
+        { status: 503 }
+      );
+    }
+
+    const settings = await getSettings();
+    if (!settings.chatbot_enabled) {
+      return NextResponse.json(
+        { error: "Le chatbot est temporairement désactivé." },
         { status: 503 }
       );
     }

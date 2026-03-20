@@ -26,7 +26,12 @@ export type BookingData = {
   patient_notes: string;
 };
 
-export function BookingWizard() {
+interface BookingWizardProps {
+  maxDays?: number;
+  allowSundays?: boolean;
+}
+
+export function BookingWizard({ maxDays = 60, allowSundays = false }: BookingWizardProps) {
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [bookingData, setBookingData] = useState<Partial<BookingData>>(() => {
@@ -122,6 +127,8 @@ export function BookingWizard() {
           {currentStep === 1 && (
             <DateStep
               selectedDate={bookingData.date}
+              maxDays={maxDays}
+              allowSundays={allowSundays}
               onSelect={(date) => {
                 updateData({ date });
                 setCurrentStep(2);

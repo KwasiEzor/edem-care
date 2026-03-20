@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { getSettings } from "@/lib/settings";
 
 const SYSTEM_PROMPT = `Tu es l'assistant virtuel d'Edem-Care, un service de soins infirmiers à domicile à Bruxelles. Tu t'appelles "Assistant Edem-Care".
 
@@ -41,6 +42,8 @@ export interface AIResponse {
 export async function generateAIResponse(
   messages: { role: "user" | "assistant"; content: string }[]
 ): Promise<AIResponse> {
+  const settings = await getSettings();
+
   const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
   });
@@ -48,7 +51,7 @@ export async function generateAIResponse(
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 512,
-    system: SYSTEM_PROMPT,
+    system: settings.chatbot_system_prompt ?? SYSTEM_PROMPT,
     messages: messages.map((m) => ({
       role: m.role,
       content: m.content,
