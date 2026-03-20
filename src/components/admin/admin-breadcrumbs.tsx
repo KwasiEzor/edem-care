@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -17,6 +18,7 @@ const LABEL_MAP: Record<string, string> = {
   calendrier: "Calendrier",
   contacts: "Contacts",
   conversations: "Conversations",
+  whatsapp: "WhatsApp",
   patients: "Patients",
   disponibilites: "Disponibilités",
   notifications: "Notifications",
@@ -42,16 +44,18 @@ export function AdminBreadcrumbs() {
     <Breadcrumb className="mb-4">
       <BreadcrumbList>
         {crumbs.map((crumb, i) => (
-          <BreadcrumbItem key={crumb.href}>
+          <React.Fragment key={crumb.href}>
             {i > 0 && <BreadcrumbSeparator />}
-            {crumb.isLast ? (
-              <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-            ) : (
-              <BreadcrumbLink render={<Link href={crumb.href} />}>
-                {crumb.label}
-              </BreadcrumbLink>
-            )}
-          </BreadcrumbItem>
+            <BreadcrumbItem>
+              {crumb.isLast ? (
+                <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink render={<Link href={crumb.href} />}>
+                  {crumb.label}
+                </BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+          </React.Fragment>
         ))}
       </BreadcrumbList>
     </Breadcrumb>
