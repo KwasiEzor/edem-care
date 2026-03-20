@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Booking, BookingStatus } from "@/types/database";
 import { CARE_TYPE_LABELS, type CareType } from "@/types/database";
@@ -12,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -30,27 +29,26 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { SearchInput } from "@/components/ui/search-input";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
   Check,
   X,
   Eye,
   CheckCircle2,
   Loader2,
+  Download,
+  CalendarDays,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 
-const STATUS_CONFIG: Record<
-  BookingStatus,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
-> = {
-  pending: { label: "En attente", variant: "outline" },
-  confirmed: { label: "Confirmé", variant: "default" },
-  cancelled: { label: "Annulé", variant: "destructive" },
-  completed: { label: "Terminé", variant: "secondary" },
-};
+const PAGE_SIZE = 10;
 
 interface BookingTableProps {
   initialBookings: Booking[];
@@ -59,15 +57,38 @@ interface BookingTableProps {
 export function BookingTable({ initialBookings }: BookingTableProps) {
   const [bookings, setBookings] = useState(initialBookings);
   const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{
+    id: string;
+    status: BookingStatus;
+    label: string;
+    variant: "destructive" | "default";
+  } | null>(null);
   const router = useRouter();
 
-  const filteredBookings =
-    filter === "all"
-      ? bookings
-      : bookings.filter((b) => b.status === filter);
+  const filtered = useMemo(() => {
+    let list = filter === "all" ? bookings : bookings.filter((b) => b.status === filter);
+
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (b) =>
+          b.patient_name.toLowerCase().includes(q) ||
+          b.patient_email.toLowerCase().includes(q) ||
+          (CARE_TYPE_LABELS[b.care_type as CareType] || b.care_type)
+            .toLowerCase()
+            .includes(q)
+      );
+    }
+
+    return list;
+  }, [bookings, filter, search]);
+
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const updateStatus = async (
     id: string,
@@ -75,6 +96,7 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
     notes?: string
   ) => {
     setLoading(id);
+    setConfirmAction(null);
     const supabase = createClient();
 
     const updateData: Partial<Booking> = { status };
@@ -91,7 +113,6 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
       return;
     }
 
-    // Send email notification to patient
     try {
       await fetch("/api/booking/status", {
         method: "POST",
@@ -121,11 +142,30 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
     router.refresh();
   };
 
+  const exportCsv = () => {
+    const header = "Patient,Email,Téléphone,Date,Créneau,Type,Statut\n";
+    const rows = filtered
+      .map(
+        (b) =>
+          `"${b.patient_name}","${b.patient_email}","${b.patient_phone}","${b.date}","${b.time_slot_start}-${b.time_slot_end}","${CARE_TYPE_LABELS[b.care_type as CareType] || b.care_type}","${b.status}"`
+      )
+      .join("\n");
+
+    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `rendez-vous-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Export CSV téléchargé");
+  };
+
   return (
     <>
-      {/* Filter */}
-      <div className="mb-4">
-        <Select value={filter} onValueChange={(v) => v && setFilter(String(v))}>
+      {/* Toolbar */}
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <Select value={filter} onValueChange={(v) => { v && setFilter(String(v)); setPage(1); }}>
           <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>
@@ -137,32 +177,42 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
             <SelectItem value="completed">Terminé</SelectItem>
           </SelectContent>
         </Select>
+        <SearchInput
+          value={search}
+          onChange={(v) => { setSearch(v); setPage(1); }}
+          placeholder="Rechercher patient, email, type..."
+          className="flex-1 max-w-xs"
+        />
+        <Button variant="outline" size="sm" onClick={exportCsv}>
+          <Download className="h-4 w-4 mr-1.5" />
+          Exporter CSV
+        </Button>
       </div>
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Patient</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Créneau</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredBookings.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-custom">
-                    Aucun rendez-vous trouvé
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredBookings.map((booking) => {
-                  const statusConfig = STATUS_CONFIG[booking.status];
-                  return (
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={CalendarDays}
+              title="Aucun rendez-vous trouvé"
+              description="Aucun résultat pour vos filtres."
+              className="py-12"
+            />
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Patient</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Créneau</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paged.map((booking) => (
                     <TableRow key={booking.id}>
                       <TableCell>
                         <div>
@@ -188,9 +238,7 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
                           booking.care_type}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={statusConfig.variant}>
-                          {statusConfig.label}
-                        </Badge>
+                        <StatusBadge status={booking.status} />
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -212,7 +260,12 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
                                 className="text-forest hover:text-forest"
                                 disabled={loading === booking.id}
                                 onClick={() =>
-                                  updateStatus(booking.id, "confirmed")
+                                  setConfirmAction({
+                                    id: booking.id,
+                                    status: "confirmed",
+                                    label: "Confirmer ce rendez-vous ?",
+                                    variant: "default",
+                                  })
                                 }
                               >
                                 {loading === booking.id ? (
@@ -227,7 +280,12 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
                                 className="text-destructive hover:text-destructive"
                                 disabled={loading === booking.id}
                                 onClick={() =>
-                                  updateStatus(booking.id, "cancelled")
+                                  setConfirmAction({
+                                    id: booking.id,
+                                    status: "cancelled",
+                                    label: "Annuler ce rendez-vous ?",
+                                    variant: "destructive",
+                                  })
                                 }
                               >
                                 <X className="h-4 w-4" />
@@ -250,13 +308,35 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
                         </div>
                       </TableCell>
                     </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                  ))}
+                </TableBody>
+              </Table>
+              <DataTablePagination
+                currentPage={page}
+                totalItems={filtered.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+              />
+            </>
+          )}
         </CardContent>
       </Card>
+
+      {/* Confirm action dialog */}
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => !open && setConfirmAction(null)}
+        title={confirmAction?.label ?? ""}
+        description="Cette action enverra une notification au patient par email."
+        confirmLabel={
+          confirmAction?.status === "confirmed" ? "Confirmer" : "Annuler le RDV"
+        }
+        variant={confirmAction?.variant ?? "default"}
+        onConfirm={() =>
+          confirmAction && updateStatus(confirmAction.id, confirmAction.status)
+        }
+        loading={!!loading}
+      />
 
       {/* Booking detail modal */}
       <Dialog
@@ -315,6 +395,11 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
                     {selectedBooking.time_slot_end.slice(0, 5)}
                   </p>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-custom">Statut :</span>
+                <StatusBadge status={selectedBooking.status} />
               </div>
 
               {selectedBooking.patient_notes && (

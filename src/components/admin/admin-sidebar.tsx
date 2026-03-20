@@ -12,6 +12,7 @@ import {
   Users,
   Clock,
   Bell,
+  Settings,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/admin/patients", label: "Patients", icon: Users },
   { href: "/admin/disponibilites", label: "Disponibilités", icon: Clock },
   { href: "/admin/notifications", label: "Notifications", icon: Bell },
+  { href: "/admin/parametres", label: "Paramètres", icon: Settings },
 ];
 
 export function AdminSidebar() {

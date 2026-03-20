@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Patient } from "@/types/database";
 import {
@@ -22,9 +22,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Plus, Pencil, Trash2, Users, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+
+const PAGE_SIZE = 10;
 
 interface PatientsManagerProps {
   initialPatients: Patient[];
@@ -33,9 +39,11 @@ interface PatientsManagerProps {
 export function PatientsManager({ initialPatients }: PatientsManagerProps) {
   const [patients, setPatients] = useState(initialPatients);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -46,14 +54,18 @@ export function PatientsManager({ initialPatients }: PatientsManagerProps) {
   });
   const router = useRouter();
 
-  const filtered = patients.filter((p) => {
+  const filtered = useMemo(() => {
+    if (!search) return patients;
     const q = search.toLowerCase();
-    return (
-      p.first_name.toLowerCase().includes(q) ||
-      p.last_name.toLowerCase().includes(q) ||
-      (p.email && p.email.toLowerCase().includes(q))
+    return patients.filter(
+      (p) =>
+        p.first_name.toLowerCase().includes(q) ||
+        p.last_name.toLowerCase().includes(q) ||
+        (p.email && p.email.toLowerCase().includes(q))
     );
-  });
+  }, [patients, search]);
+
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const openCreate = () => {
     setEditing(null);
@@ -139,32 +151,35 @@ export function PatientsManager({ initialPatients }: PatientsManagerProps) {
     router.refresh();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
     const supabase = createClient();
-    const { error } = await supabase.from("patients").delete().eq("id", id);
+    const { error } = await supabase
+      .from("patients")
+      .delete()
+      .eq("id", deleteConfirm);
 
     if (error) {
       toast.error("Erreur lors de la suppression");
+      setDeleteConfirm(null);
       return;
     }
 
-    setPatients((prev) => prev.filter((p) => p.id !== id));
+    setPatients((prev) => prev.filter((p) => p.id !== deleteConfirm));
     toast.success("Patient supprimé");
+    setDeleteConfirm(null);
     router.refresh();
   };
 
   return (
     <>
-      <div className="flex items-center gap-4 mb-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-custom" />
-          <Input
-            placeholder="Rechercher un patient..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <SearchInput
+          value={search}
+          onChange={(v) => { setSearch(v); setPage(1); }}
+          placeholder="Rechercher un patient..."
+          className="flex-1 max-w-sm"
+        />
         <Button
           onClick={openCreate}
           className="bg-forest hover:bg-forest/90 gap-2"
@@ -176,67 +191,90 @@ export function PatientsManager({ initialPatients }: PatientsManagerProps) {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Téléphone</TableHead>
-                <TableHead>Adresse</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center py-8 text-muted-custom"
-                  >
-                    Aucun patient trouvé
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((patient) => (
-                  <TableRow key={patient.id}>
-                    <TableCell className="font-medium">
-                      {patient.last_name} {patient.first_name}
-                    </TableCell>
-                    <TableCell className="text-muted-custom">
-                      {patient.email || "-"}
-                    </TableCell>
-                    <TableCell className="text-muted-custom">
-                      {patient.phone || "-"}
-                    </TableCell>
-                    <TableCell className="text-muted-custom truncate max-w-48">
-                      {patient.address || "-"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEdit(patient)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(patient.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="Aucun patient trouvé"
+              description={
+                search
+                  ? "Aucun résultat pour cette recherche."
+                  : "Commencez par ajouter votre premier patient."
+              }
+              actionLabel={!search ? "Ajouter un patient" : undefined}
+              onAction={!search ? openCreate : undefined}
+              className="py-12"
+            />
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Téléphone</TableHead>
+                    <TableHead>Adresse</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                  {paged.map((patient) => (
+                    <TableRow key={patient.id}>
+                      <TableCell className="font-medium">
+                        {patient.last_name} {patient.first_name}
+                      </TableCell>
+                      <TableCell className="text-muted-custom">
+                        {patient.email || "-"}
+                      </TableCell>
+                      <TableCell className="text-muted-custom">
+                        {patient.phone || "-"}
+                      </TableCell>
+                      <TableCell className="text-muted-custom truncate max-w-48">
+                        {patient.address || "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEdit(patient)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeleteConfirm(patient.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <DataTablePagination
+                currentPage={page}
+                totalItems={filtered.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+              />
+            </>
+          )}
         </CardContent>
       </Card>
+
+      {/* Delete confirmation */}
+      <ConfirmDialog
+        open={deleteConfirm !== null}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        title="Supprimer ce patient ?"
+        description="Cette action est irréversible. Toutes les données associées seront perdues."
+        confirmLabel="Supprimer"
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
 
       {/* Create/Edit dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

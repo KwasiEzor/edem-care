@@ -69,6 +69,28 @@ export async function signOutPatient() {
   await supabase.auth.signOut();
 }
 
+export async function resetPatientPassword(email: string) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/auth/callback?next=/mon-espace`,
+  });
+  return { error };
+}
+
+export async function updatePatientPassword(newPassword: string) {
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+  return { error };
+}
+
+export async function updatePatientProfile(data: {
+  full_name?: string;
+  phone?: string;
+}) {
+  const { error } = await supabase.auth.updateUser({ data });
+  return { error };
+}
+
 export function getPatientUser(session: Session | null): User | null {
   return session?.user ?? null;
 }

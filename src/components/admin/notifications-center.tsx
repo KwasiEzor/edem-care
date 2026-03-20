@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   CalendarDays,
   MessageSquare,
@@ -148,9 +149,13 @@ export function NotificationsCenter({
       <div className="space-y-2">
         {filtered.length === 0 ? (
           <Card>
-            <CardContent className="p-8 text-center">
-              <Bell className="h-12 w-12 text-muted-custom/30 mx-auto mb-4" />
-              <p className="text-muted-custom">Aucune notification</p>
+            <CardContent className="p-0">
+              <EmptyState
+                icon={Bell}
+                title="Aucune notification"
+                description="Les nouvelles notifications apparaîtront ici en temps réel."
+                className="py-12"
+              />
             </CardContent>
           </Card>
         ) : (

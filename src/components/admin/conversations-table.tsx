@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { ChatTranscript } from "@/types/database";
 import { CARE_TYPE_LABELS, type CareType } from "@/types/database";
 import {
@@ -27,9 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Eye } from "lucide-react";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Eye, MessageSquareMore } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+
+const PAGE_SIZE = 10;
 
 interface ConversationsTableProps {
   initialTranscripts: ChatTranscript[];
@@ -42,12 +46,17 @@ export function ConversationsTable({
 }: ConversationsTableProps) {
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState<ChatTranscript | null>(null);
+  const [page, setPage] = useState(1);
 
-  const filtered = initialTranscripts.filter((t) => {
-    if (filter === "with_intent") return t.booking_intent;
-    if (filter === "without_intent") return !t.booking_intent;
-    return true;
-  });
+  const filtered = useMemo(() => {
+    return initialTranscripts.filter((t) => {
+      if (filter === "with_intent") return t.booking_intent;
+      if (filter === "without_intent") return !t.booking_intent;
+      return true;
+    });
+  }, [initialTranscripts, filter]);
+
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <>
@@ -56,7 +65,7 @@ export function ConversationsTable({
         <span className="text-sm text-muted-custom">Filtrer :</span>
         <Select
           value={filter}
-          onValueChange={(v) => setFilter(v as Filter)}
+          onValueChange={(v) => { setFilter(v as Filter); setPage(1); }}
         >
           <SelectTrigger className="w-[220px]">
             <SelectValue />
@@ -75,73 +84,79 @@ export function ConversationsTable({
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Messages</TableHead>
-                <TableHead>Type de soins suggéré</TableHead>
-                <TableHead>Intention RDV</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center py-8 text-muted-custom"
-                  >
-                    Aucune conversation
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((transcript) => (
-                  <TableRow key={transcript.id}>
-                    <TableCell className="text-muted-custom">
-                      {format(
-                        new Date(transcript.created_at),
-                        "dd/MM/yyyy HH:mm",
-                        { locale: fr }
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-medium text-ink">
-                        {Array.isArray(transcript.messages)
-                          ? transcript.messages.length
-                          : 0}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {transcript.care_type_suggested
-                        ? CARE_TYPE_LABELS[
-                            transcript.care_type_suggested as CareType
-                          ] || transcript.care_type_suggested
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {transcript.booking_intent ? (
-                        <Badge className="bg-forest/10 text-forest hover:bg-forest/15">
-                          Oui
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Non</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setSelected(transcript)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={MessageSquareMore}
+              title="Aucune conversation"
+              description="Les conversations avec le chatbot IA s'afficheront ici."
+              className="py-12"
+            />
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Messages</TableHead>
+                    <TableHead>Type de soins suggéré</TableHead>
+                    <TableHead>Intention RDV</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                  {paged.map((transcript) => (
+                    <TableRow key={transcript.id}>
+                      <TableCell className="text-muted-custom">
+                        {format(
+                          new Date(transcript.created_at),
+                          "dd/MM/yyyy HH:mm",
+                          { locale: fr }
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium text-ink">
+                          {Array.isArray(transcript.messages)
+                            ? transcript.messages.length
+                            : 0}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {transcript.care_type_suggested
+                          ? CARE_TYPE_LABELS[
+                              transcript.care_type_suggested as CareType
+                            ] || transcript.care_type_suggested
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {transcript.booking_intent ? (
+                          <Badge className="bg-forest/10 text-forest hover:bg-forest/15">
+                            Oui
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">Non</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setSelected(transcript)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <DataTablePagination
+                currentPage={page}
+                totalItems={filtered.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+              />
+            </>
+          )}
         </CardContent>
       </Card>
 
