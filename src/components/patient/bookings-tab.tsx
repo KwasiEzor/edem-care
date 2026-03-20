@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { BookingEditDialog } from "./booking-edit-dialog";
 
 export type Booking = {
-  id: number;
+  id: string;
   date: string;
   time_slot_start: string;
   time_slot_end: string;
@@ -33,8 +33,8 @@ interface BookingsTabProps {
 
 export function BookingsTab({ bookings, onBookingsChange }: BookingsTabProps) {
   const [filter, setFilter] = useState<BookingFilter>("upcoming");
-  const [cancelConfirm, setCancelConfirm] = useState<number | null>(null);
-  const [cancelingId, setCancelingId] = useState<number | null>(null);
+  const [cancelConfirm, setCancelConfirm] = useState<string | null>(null);
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
 
   const now = new Date();

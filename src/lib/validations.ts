@@ -65,7 +65,7 @@ export const bookingFormSchema = z.object({
 export type BookingFormData = z.infer<typeof bookingFormSchema>;
 
 export const bookingUpdateSchema = z.object({
-  booking_id: z.number().int().positive(),
+  booking_id: z.string().uuid(),
   date: z.string().min(1).optional(),
   time_slot_start: z
     .string()
@@ -80,7 +80,7 @@ export const bookingUpdateSchema = z.object({
 });
 
 export const bookingCancelSchema = z.object({
-  booking_id: z.number().int().positive(),
+  booking_id: z.string().uuid(),
 });
 
 export type BookingUpdateData = z.infer<typeof bookingUpdateSchema>;
