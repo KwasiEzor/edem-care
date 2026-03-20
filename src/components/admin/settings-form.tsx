@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { AdminSettings } from "@/lib/settings";
+import type { AdminSettings, QuickReply, BusinessHoursSchedule } from "@/lib/settings";
+import { DAYS_OF_WEEK, DAY_LABELS } from "@/lib/settings";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,11 +19,25 @@ import {
   Bell,
   Loader2,
   RotateCcw,
+  CheckCircle2,
+  XCircle,
+  Plus,
+  X,
+  Copy,
+  ShieldAlert,
+  Clock,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 
+export interface WhatsAppStatus {
+  connected: boolean;
+  webhookUrl: string;
+}
+
 interface SettingsFormProps {
   initialSettings: AdminSettings;
+  whatsappStatus?: WhatsAppStatus;
 }
 
 async function saveSettings(data: Partial<AdminSettings>) {
@@ -40,7 +55,7 @@ async function saveSettings(data: Partial<AdminSettings>) {
   return res.json();
 }
 
-export function SettingsForm({ initialSettings }: SettingsFormProps) {
+export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormProps) {
   const [settings, setSettings] = useState<AdminSettings>(initialSettings);
   const [saving, setSaving] = useState<string | null>(null);
 
@@ -290,31 +305,257 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 
       {/* WhatsApp */}
       <TabsContent value="whatsapp">
-        <Card>
-          <CardContent className="p-6">
-            <SectionHeader
-              icon={MessageCircle}
-              title="WhatsApp"
-              description="Configuration par défaut des conversations WhatsApp"
-            />
-            <div className="space-y-6">
-              <SwitchRow
-                label="Réponse IA automatique"
-                description="Quand activé, l'IA répond automatiquement aux nouvelles conversations WhatsApp. Vous pouvez toujours prendre le contrôle manuellement."
-                checked={settings.whatsapp_ai_auto_reply}
-                onCheckedChange={(v) => update("whatsapp_ai_auto_reply", v)}
+        <div className="space-y-6">
+          {/* Connection Status */}
+          {whatsappStatus && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  {whatsappStatus.connected ? (
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-amber-500 shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-ink">
+                      {whatsappStatus.connected
+                        ? "WhatsApp Business connecté"
+                        : "WhatsApp Business non configuré"}
+                    </p>
+                    <p className="text-xs text-muted-custom">
+                      {whatsappStatus.connected
+                        ? "Les variables d'environnement sont configurées"
+                        : "Configurez WHATSAPP_ACCESS_TOKEN et WHATSAPP_PHONE_NUMBER_ID"}
+                    </p>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-2">
+                    <code className="text-[10px] bg-slate-100 px-2 py-1 rounded text-muted-custom max-w-[280px] truncate">
+                      {whatsappStatus.webhookUrl}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => {
+                        navigator.clipboard.writeText(whatsappStatus.webhookUrl);
+                        toast.success("URL copiée");
+                      }}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Messages automatiques */}
+          <Card>
+            <CardContent className="p-6">
+              <SectionHeader
+                icon={MessageCircle}
+                title="Messages automatiques"
+                description="Gestion de l'IA et des messages automatiques"
               />
-            </div>
-            <SaveButton
-              loading={saving === "whatsapp"}
-              onClick={() =>
-                handleSave("whatsapp", {
-                  whatsapp_ai_auto_reply: settings.whatsapp_ai_auto_reply,
-                })
-              }
-            />
-          </CardContent>
-        </Card>
+              <div className="space-y-6">
+                <SwitchRow
+                  label="Réponse IA automatique"
+                  description="L'IA répond automatiquement aux nouvelles conversations. Vous pouvez toujours prendre le contrôle manuellement."
+                  checked={settings.whatsapp_ai_auto_reply}
+                  onCheckedChange={(v) => update("whatsapp_ai_auto_reply", v)}
+                />
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Message de bienvenue</Label>
+                  <p className="text-xs text-muted-custom">
+                    Envoyé automatiquement lors du premier message d&apos;un nouveau contact
+                  </p>
+                  <Textarea
+                    value={settings.whatsapp_welcome_message}
+                    onChange={(e) => update("whatsapp_welcome_message", e.target.value)}
+                    rows={3}
+                    className="text-xs"
+                  />
+                </div>
+                <Separator />
+                <SwitchRow
+                  label="Horaires d'ouverture"
+                  description="Envoyer un message d'absence en dehors des heures configurées"
+                  checked={settings.whatsapp_business_hours_enabled}
+                  onCheckedChange={(v) => update("whatsapp_business_hours_enabled", v)}
+                />
+                {settings.whatsapp_business_hours_enabled && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Message d&apos;absence</Label>
+                    <Textarea
+                      value={settings.whatsapp_away_message}
+                      onChange={(e) => update("whatsapp_away_message", e.target.value)}
+                      rows={3}
+                      className="text-xs"
+                    />
+                  </div>
+                )}
+              </div>
+              <SaveButton
+                loading={saving === "whatsapp-messages"}
+                onClick={() =>
+                  handleSave("whatsapp-messages", {
+                    whatsapp_ai_auto_reply: settings.whatsapp_ai_auto_reply,
+                    whatsapp_welcome_message: settings.whatsapp_welcome_message,
+                    whatsapp_away_message: settings.whatsapp_away_message,
+                    whatsapp_business_hours_enabled: settings.whatsapp_business_hours_enabled,
+                  })
+                }
+              />
+            </CardContent>
+          </Card>
+
+          {/* Business Hours */}
+          {settings.whatsapp_business_hours_enabled && (
+            <Card>
+              <CardContent className="p-6">
+                <SectionHeader
+                  icon={Clock}
+                  title="Horaires d'ouverture"
+                  description="Fuseau horaire : Europe/Bruxelles"
+                />
+                <div className="space-y-3">
+                  {DAYS_OF_WEEK.map((day) => {
+                    const dh = settings.whatsapp_business_hours[day];
+                    return (
+                      <div
+                        key={day}
+                        className="flex items-center gap-3 py-1"
+                      >
+                        <Switch
+                          size="sm"
+                          checked={dh.enabled}
+                          onCheckedChange={(v) => {
+                            const updated = { ...settings.whatsapp_business_hours };
+                            updated[day] = { ...dh, enabled: v };
+                            update("whatsapp_business_hours", updated);
+                          }}
+                        />
+                        <span className="text-sm font-medium w-20 text-ink">
+                          {DAY_LABELS[day]}
+                        </span>
+                        {dh.enabled ? (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="time"
+                              value={dh.start}
+                              onChange={(e) => {
+                                const updated = { ...settings.whatsapp_business_hours };
+                                updated[day] = { ...dh, start: e.target.value };
+                                update("whatsapp_business_hours", updated);
+                              }}
+                              className="w-28 text-xs"
+                            />
+                            <span className="text-xs text-muted-custom">à</span>
+                            <Input
+                              type="time"
+                              value={dh.end}
+                              onChange={(e) => {
+                                const updated = { ...settings.whatsapp_business_hours };
+                                updated[day] = { ...dh, end: e.target.value };
+                                update("whatsapp_business_hours", updated);
+                              }}
+                              className="w-28 text-xs"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-custom italic">Fermé</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <SaveButton
+                  loading={saving === "whatsapp-hours"}
+                  onClick={() =>
+                    handleSave("whatsapp-hours", {
+                      whatsapp_business_hours: settings.whatsapp_business_hours,
+                    })
+                  }
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Sécurité & Escalade */}
+          <Card>
+            <CardContent className="p-6">
+              <SectionHeader
+                icon={ShieldAlert}
+                title="Sécurité & Escalade"
+                description="Règles de détection pour désactiver l'IA et alerter l'admin"
+              />
+              <div className="space-y-6">
+                <FieldRow
+                  label="Max messages IA"
+                  htmlFor="max_ai_msgs"
+                  description="Nombre maximum de réponses IA avant de suggérer un contact humain (1–50)"
+                >
+                  <Input
+                    id="max_ai_msgs"
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={settings.whatsapp_max_ai_messages}
+                    onChange={(e) =>
+                      update(
+                        "whatsapp_max_ai_messages",
+                        Math.max(1, Math.min(50, parseInt(e.target.value) || 10))
+                      )
+                    }
+                    className="w-20"
+                  />
+                </FieldRow>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Mots-clés d&apos;escalade</Label>
+                  <p className="text-xs text-muted-custom">
+                    Si un patient utilise ces mots, l&apos;IA est désactivée et vous êtes alerté
+                  </p>
+                  <KeywordInput
+                    keywords={settings.whatsapp_escalation_keywords}
+                    onChange={(kws) => update("whatsapp_escalation_keywords", kws)}
+                  />
+                </div>
+              </div>
+              <SaveButton
+                loading={saving === "whatsapp-escalation"}
+                onClick={() =>
+                  handleSave("whatsapp-escalation", {
+                    whatsapp_max_ai_messages: settings.whatsapp_max_ai_messages,
+                    whatsapp_escalation_keywords: settings.whatsapp_escalation_keywords,
+                  })
+                }
+              />
+            </CardContent>
+          </Card>
+
+          {/* Réponses rapides */}
+          <Card>
+            <CardContent className="p-6">
+              <SectionHeader
+                icon={Zap}
+                title="Réponses rapides"
+                description="Messages pré-enregistrés pour répondre rapidement depuis l'inbox"
+              />
+              <QuickRepliesEditor
+                replies={settings.whatsapp_quick_replies}
+                onChange={(replies) => update("whatsapp_quick_replies", replies)}
+              />
+              <SaveButton
+                loading={saving === "whatsapp-replies"}
+                onClick={() =>
+                  handleSave("whatsapp-replies", {
+                    whatsapp_quick_replies: settings.whatsapp_quick_replies,
+                  })
+                }
+              />
+            </CardContent>
+          </Card>
+        </div>
       </TabsContent>
 
       {/* Notifications */}
@@ -464,6 +705,169 @@ function SaveButton({
         ) : null}
         Enregistrer
       </Button>
+    </div>
+  );
+}
+
+function KeywordInput({
+  keywords,
+  onChange,
+}: {
+  keywords: string[];
+  onChange: (keywords: string[]) => void;
+}) {
+  const [input, setInput] = useState("");
+
+  const addKeyword = () => {
+    const kw = input.trim().toLowerCase();
+    if (kw && !keywords.includes(kw)) {
+      onChange([...keywords, kw]);
+    }
+    setInput("");
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {keywords.map((kw) => (
+          <span
+            key={kw}
+            className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 border border-red-200"
+          >
+            {kw}
+            <button
+              type="button"
+              onClick={() => onChange(keywords.filter((k) => k !== kw))}
+              className="hover:text-red-900"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <Input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addKeyword();
+            }
+          }}
+          placeholder="Ajouter un mot-clé..."
+          className="text-xs"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={addKeyword}
+          disabled={!input.trim()}
+          className="shrink-0"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function QuickRepliesEditor({
+  replies,
+  onChange,
+}: {
+  replies: QuickReply[];
+  onChange: (replies: QuickReply[]) => void;
+}) {
+  const [showAdd, setShowAdd] = useState(false);
+  const [newLabel, setNewLabel] = useState("");
+  const [newMessage, setNewMessage] = useState("");
+
+  const addReply = () => {
+    if (newLabel.trim() && newMessage.trim()) {
+      onChange([...replies, { label: newLabel.trim(), message: newMessage.trim() }]);
+      setNewLabel("");
+      setNewMessage("");
+      setShowAdd(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {replies.length === 0 && !showAdd && (
+        <p className="text-xs text-muted-custom italic py-2">
+          Aucune réponse rapide configurée
+        </p>
+      )}
+      {replies.map((reply, i) => (
+        <div
+          key={i}
+          className="rounded-lg border border-border p-3 space-y-1"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-forest">
+              {reply.label}
+            </span>
+            <button
+              type="button"
+              onClick={() => onChange(replies.filter((_, idx) => idx !== i))}
+              className="text-muted-custom hover:text-destructive"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <p className="text-xs text-muted-custom line-clamp-2">{reply.message}</p>
+        </div>
+      ))}
+      {showAdd ? (
+        <div className="rounded-lg border-2 border-dashed border-forest/20 p-3 space-y-2">
+          <Input
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            placeholder="Libellé (ex: Confirmation RDV)"
+            className="text-xs"
+          />
+          <Textarea
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Message complet..."
+            rows={3}
+            className="text-xs"
+          />
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                setShowAdd(false);
+                setNewLabel("");
+                setNewMessage("");
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              size="sm"
+              className="text-xs bg-forest text-white hover:bg-forest/90"
+              onClick={addReply}
+              disabled={!newLabel.trim() || !newMessage.trim()}
+            >
+              Ajouter
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full text-xs"
+          onClick={() => setShowAdd(true)}
+        >
+          <Plus className="h-3.5 w-3.5 mr-1" />
+          Ajouter une réponse rapide
+        </Button>
+      )}
     </div>
   );
 }

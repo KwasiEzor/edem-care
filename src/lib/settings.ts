@@ -1,5 +1,40 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
+export interface DayHours {
+  enabled: boolean;
+  start: string; // "HH:MM"
+  end: string;   // "HH:MM"
+}
+
+export type BusinessHoursSchedule = {
+  monday: DayHours;
+  tuesday: DayHours;
+  wednesday: DayHours;
+  thursday: DayHours;
+  friday: DayHours;
+  saturday: DayHours;
+  sunday: DayHours;
+};
+
+export interface QuickReply {
+  label: string;
+  message: string;
+}
+
+export const DAYS_OF_WEEK = [
+  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+] as const;
+
+export const DAY_LABELS: Record<string, string> = {
+  monday: "Lundi",
+  tuesday: "Mardi",
+  wednesday: "Mercredi",
+  thursday: "Jeudi",
+  friday: "Vendredi",
+  saturday: "Samedi",
+  sunday: "Dimanche",
+};
+
 export interface AdminSettings {
   // Profil & Cabinet
   business_name: string;
@@ -19,6 +54,13 @@ export interface AdminSettings {
 
   // WhatsApp
   whatsapp_ai_auto_reply: boolean;
+  whatsapp_welcome_message: string;
+  whatsapp_away_message: string;
+  whatsapp_business_hours_enabled: boolean;
+  whatsapp_business_hours: BusinessHoursSchedule;
+  whatsapp_max_ai_messages: number;
+  whatsapp_escalation_keywords: string[];
+  whatsapp_quick_replies: QuickReply[];
 
   // Notifications
   notify_email_new_booking: boolean;
@@ -44,6 +86,26 @@ export const DEFAULT_SETTINGS: AdminSettings = {
   chatbot_system_prompt: null,
 
   whatsapp_ai_auto_reply: true,
+  whatsapp_welcome_message:
+    "Bonjour ! Bienvenue chez Edem-Care, votre service de soins infirmiers à domicile à Bruxelles. Comment puis-je vous aider ?",
+  whatsapp_away_message:
+    "Merci pour votre message. Nous sommes actuellement fermés. Nos horaires sont du lundi au samedi, de 7h à 20h. Nous vous répondrons dès notre réouverture.",
+  whatsapp_business_hours_enabled: true,
+  whatsapp_business_hours: {
+    monday:    { enabled: true,  start: "07:00", end: "20:00" },
+    tuesday:   { enabled: true,  start: "07:00", end: "20:00" },
+    wednesday: { enabled: true,  start: "07:00", end: "20:00" },
+    thursday:  { enabled: true,  start: "07:00", end: "20:00" },
+    friday:    { enabled: true,  start: "07:00", end: "20:00" },
+    saturday:  { enabled: true,  start: "07:00", end: "20:00" },
+    sunday:    { enabled: false, start: "07:00", end: "20:00" },
+  },
+  whatsapp_max_ai_messages: 10,
+  whatsapp_escalation_keywords: [
+    "urgence", "urgent", "douleur intense", "hémorragie",
+    "112", "ambulance", "détresse respiratoire", "malaise grave",
+  ],
+  whatsapp_quick_replies: [],
 
   notify_email_new_booking: true,
   notify_email_new_contact: true,

@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateAIResponse } from "@/lib/ai/chat-service";
-import { getSettings } from "@/lib/settings";
+import { getSettings, type AdminSettings } from "@/lib/settings";
+import {
+  isWithinBusinessHours,
+  containsEscalationKeyword,
+  countAIMessages,
+} from "@/lib/whatsapp/business-hours";
 import {
   sendWhatsAppMessage,
   markMessageAsRead,
@@ -88,6 +93,7 @@ async function processIncomingMessage(msg: ExtractedMessage) {
     // Send read receipt
     await markMessageAsRead(msg.messageId).catch(() => {});
 
+    const settings = await getSettings();
     const now = new Date().toISOString();
 
     // Find or create conversation
@@ -105,7 +111,10 @@ async function processIncomingMessage(msg: ExtractedMessage) {
     };
 
     if (conversation) {
-      const messages = [...(conversation.messages as WhatsAppMessage[]), patientMessage];
+      const messages = [
+        ...(conversation.messages as WhatsAppMessage[]),
+        patientMessage,
+      ];
 
       await supabase
         .from("whatsapp_conversations")
@@ -117,21 +126,34 @@ async function processIncomingMessage(msg: ExtractedMessage) {
         })
         .eq("id", conversation.id);
 
-      // Generate AI response if AI is active
+      // Only attempt AI reply if AI is active for this conversation
       if (conversation.is_ai_active) {
-        await generateAndSendAIReply(conversation.id, messages, msg.from);
+        await handleAIReply(conversation.id, messages, msg, settings);
       }
     } else {
-      // Create new conversation with AI default from settings
-      const settings = await getSettings();
+      // New conversation — send welcome message + decide AI behavior
       const aiActive = settings.whatsapp_ai_auto_reply;
+      const allMessages: WhatsAppMessage[] = [patientMessage];
+
+      // Send welcome message to new contacts
+      if (settings.whatsapp_welcome_message) {
+        await sendWhatsAppMessage({
+          to: msg.from,
+          text: settings.whatsapp_welcome_message,
+        });
+        allMessages.push({
+          role: "ai",
+          content: settings.whatsapp_welcome_message,
+          timestamp: new Date().toISOString(),
+        });
+      }
 
       const { data: newConv } = await supabase
         .from("whatsapp_conversations")
         .insert({
           phone_number: msg.from,
           contact_name: msg.contactName,
-          messages: [patientMessage],
+          messages: allMessages,
           is_ai_active: aiActive,
           last_message_at: now,
         })
@@ -139,12 +161,86 @@ async function processIncomingMessage(msg: ExtractedMessage) {
         .single();
 
       if (newConv && aiActive) {
-        await generateAndSendAIReply(newConv.id, [patientMessage], msg.from);
+        await handleAIReply(newConv.id, allMessages, msg, settings);
       }
     }
   } catch (error) {
     console.error("Error processing WhatsApp message:", error);
   }
+}
+
+/**
+ * Decide whether to send an AI reply based on business hours,
+ * escalation keywords, and the AI message cap.
+ */
+async function handleAIReply(
+  conversationId: string,
+  messages: WhatsAppMessage[],
+  msg: ExtractedMessage,
+  settings: AdminSettings
+) {
+  const supabase = createAdminClient();
+
+  // 1. Escalation keyword check — disable AI and flag
+  if (
+    settings.whatsapp_escalation_keywords.length > 0 &&
+    containsEscalationKeyword(msg.text, settings.whatsapp_escalation_keywords)
+  ) {
+    await supabase
+      .from("whatsapp_conversations")
+      .update({
+        is_ai_active: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", conversationId);
+    // Don't send any automated reply — admin will handle
+    return;
+  }
+
+  // 2. AI message cap — disable AI when limit reached
+  const aiCount = countAIMessages(messages);
+  if (aiCount >= settings.whatsapp_max_ai_messages) {
+    await supabase
+      .from("whatsapp_conversations")
+      .update({
+        is_ai_active: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", conversationId);
+    return;
+  }
+
+  // 3. Business hours check — send away message if outside hours
+  if (
+    settings.whatsapp_business_hours_enabled &&
+    !isWithinBusinessHours(settings.whatsapp_business_hours)
+  ) {
+    if (settings.whatsapp_away_message) {
+      await sendWhatsAppMessage({
+        to: msg.from,
+        text: settings.whatsapp_away_message,
+      });
+
+      const awayMsg: WhatsAppMessage = {
+        role: "ai",
+        content: settings.whatsapp_away_message,
+        timestamp: new Date().toISOString(),
+      };
+
+      await supabase
+        .from("whatsapp_conversations")
+        .update({
+          messages: [...messages, awayMsg],
+          last_message_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", conversationId);
+    }
+    return;
+  }
+
+  // 4. All checks passed — generate AI reply
+  await generateAndSendAIReply(conversationId, messages, msg.from);
 }
 
 async function generateAndSendAIReply(

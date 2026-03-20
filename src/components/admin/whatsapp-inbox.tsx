@@ -8,16 +8,29 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
-import { MessageCircle, Bot, UserRound, Send, Phone } from "lucide-react";
+import {
+  MessageCircle,
+  Bot,
+  UserRound,
+  Send,
+  Phone,
+  Zap,
+  ChevronDown,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow, format } from "date-fns";
 import { fr } from "date-fns/locale";
+import type { QuickReply } from "@/lib/settings";
 
 interface WhatsAppInboxProps {
   initialConversations: WhatsAppConversation[];
+  quickReplies?: QuickReply[];
 }
 
-export function WhatsAppInbox({ initialConversations }: WhatsAppInboxProps) {
+export function WhatsAppInbox({
+  initialConversations,
+  quickReplies = [],
+}: WhatsAppInboxProps) {
   const [conversations, setConversations] =
     useState<WhatsAppConversation[]>(initialConversations);
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -26,6 +39,7 @@ export function WhatsAppInbox({ initialConversations }: WhatsAppInboxProps) {
   const [search, setSearch] = useState("");
   const [messageInput, setMessageInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
@@ -276,29 +290,67 @@ export function WhatsAppInbox({ initialConversations }: WhatsAppInboxProps) {
                   charge&quot; pour répondre manuellement.
                 </p>
               ) : (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                      }
-                    }}
-                    placeholder="Écrire un message..."
-                    className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest"
-                    disabled={sending}
-                  />
-                  <Button
-                    size="icon"
-                    className="bg-forest text-white hover:bg-forest/90 shrink-0"
-                    onClick={sendMessage}
-                    disabled={sending || !messageInput.trim()}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+                <div className="space-y-2">
+                  {/* Quick replies */}
+                  {quickReplies.length > 0 && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setShowQuickReplies((v) => !v)}
+                        className="flex items-center gap-1 text-xs text-muted-custom hover:text-forest transition-colors"
+                      >
+                        <Zap className="h-3 w-3" />
+                        Réponses rapides
+                        <ChevronDown
+                          className={cn(
+                            "h-3 w-3 transition-transform",
+                            showQuickReplies && "rotate-180"
+                          )}
+                        />
+                      </button>
+                      {showQuickReplies && (
+                        <div className="flex flex-wrap gap-1.5 mt-1.5">
+                          {quickReplies.map((qr, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => {
+                                setMessageInput(qr.message);
+                                setShowQuickReplies(false);
+                              }}
+                              className="rounded-full border border-forest/20 bg-forest/5 px-2.5 py-1 text-xs text-forest hover:bg-forest/10 transition-colors"
+                            >
+                              {qr.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={messageInput}
+                      onChange={(e) => setMessageInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          sendMessage();
+                        }
+                      }}
+                      placeholder="Écrire un message..."
+                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest"
+                      disabled={sending}
+                    />
+                    <Button
+                      size="icon"
+                      className="bg-forest text-white hover:bg-forest/90 shrink-0"
+                      onClick={sendMessage}
+                      disabled={sending || !messageInput.trim()}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

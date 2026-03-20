@@ -18,6 +18,30 @@ const settingsUpdateSchema = z.object({
   chatbot_system_prompt: z.string().max(5000).nullable().optional(),
 
   whatsapp_ai_auto_reply: z.boolean().optional(),
+  whatsapp_welcome_message: z.string().min(1).max(1000).optional(),
+  whatsapp_away_message: z.string().min(1).max(1000).optional(),
+  whatsapp_business_hours_enabled: z.boolean().optional(),
+  whatsapp_business_hours: z
+    .record(
+      z.string(),
+      z.object({
+        enabled: z.boolean(),
+        start: z.string().regex(/^\d{2}:\d{2}$/),
+        end: z.string().regex(/^\d{2}:\d{2}$/),
+      })
+    )
+    .optional(),
+  whatsapp_max_ai_messages: z.number().int().min(1).max(50).optional(),
+  whatsapp_escalation_keywords: z.array(z.string().max(50)).max(20).optional(),
+  whatsapp_quick_replies: z
+    .array(
+      z.object({
+        label: z.string().min(1).max(50),
+        message: z.string().min(1).max(1000),
+      })
+    )
+    .max(20)
+    .optional(),
 
   notify_email_new_booking: z.boolean().optional(),
   notify_email_new_contact: z.boolean().optional(),

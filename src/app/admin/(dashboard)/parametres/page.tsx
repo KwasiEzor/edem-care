@@ -31,6 +31,14 @@ const quickLinks = [
 export default async function SettingsPage() {
   const settings = await getSettings();
 
+  const whatsappStatus = {
+    connected: !!(
+      process.env.WHATSAPP_ACCESS_TOKEN &&
+      process.env.WHATSAPP_PHONE_NUMBER_ID
+    ),
+    webhookUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhooks/whatsapp`,
+  };
+
   return (
     <>
       <AdminHeader
@@ -38,7 +46,10 @@ export default async function SettingsPage() {
         description="Configuration générale et préférences"
       />
 
-      <SettingsForm initialSettings={settings} />
+      <SettingsForm
+        initialSettings={settings}
+        whatsappStatus={whatsappStatus}
+      />
 
       {/* Quick links */}
       <div className="mt-8">

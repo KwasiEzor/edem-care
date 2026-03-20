@@ -1,7 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { getSettings } from "@/lib/settings";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { WhatsAppInbox } from "@/components/admin/whatsapp-inbox";
 import type { WhatsAppConversation } from "@/types/database";
+
+export const dynamic = "force-dynamic";
 
 async function getConversations(): Promise<WhatsAppConversation[]> {
   const supabase = await createClient();
@@ -14,7 +17,10 @@ async function getConversations(): Promise<WhatsAppConversation[]> {
 }
 
 export default async function WhatsAppPage() {
-  const conversations = await getConversations();
+  const [conversations, settings] = await Promise.all([
+    getConversations(),
+    getSettings(),
+  ]);
 
   return (
     <>
@@ -22,7 +28,10 @@ export default async function WhatsAppPage() {
         title="WhatsApp"
         description="Gérez les conversations WhatsApp avec les patients"
       />
-      <WhatsAppInbox initialConversations={conversations} />
+      <WhatsAppInbox
+        initialConversations={conversations}
+        quickReplies={settings.whatsapp_quick_replies}
+      />
     </>
   );
 }
