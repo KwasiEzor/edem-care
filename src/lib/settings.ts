@@ -62,11 +62,15 @@ export interface AdminSettings {
   whatsapp_escalation_keywords: string[];
   whatsapp_quick_replies: QuickReply[];
 
-  // Notifications
+  // Notifications (admin)
   notify_email_new_booking: boolean;
   notify_email_new_contact: boolean;
   notify_email_booking_reminder: boolean;
   notify_sound_alerts: boolean;
+
+  // Notifications (patient)
+  patient_notify_email: boolean;
+  patient_notify_whatsapp: boolean;
 
   updated_at: string;
 }
@@ -111,6 +115,9 @@ export const DEFAULT_SETTINGS: AdminSettings = {
   notify_email_new_contact: true,
   notify_email_booking_reminder: true,
   notify_sound_alerts: false,
+
+  patient_notify_email: true,
+  patient_notify_whatsapp: false,
 
   updated_at: new Date().toISOString(),
 };

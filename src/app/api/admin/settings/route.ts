@@ -47,6 +47,9 @@ const settingsUpdateSchema = z.object({
   notify_email_new_contact: z.boolean().optional(),
   notify_email_booking_reminder: z.boolean().optional(),
   notify_sound_alerts: z.boolean().optional(),
+
+  patient_notify_email: z.boolean().optional(),
+  patient_notify_whatsapp: z.boolean().optional(),
 });
 
 async function ensureAuth() {

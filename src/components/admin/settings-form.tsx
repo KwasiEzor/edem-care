@@ -27,6 +27,8 @@ import {
   ShieldAlert,
   Clock,
   Zap,
+  Mail,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -604,6 +606,39 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
                   notify_email_booking_reminder:
                     settings.notify_email_booking_reminder,
                   notify_sound_alerts: settings.notify_sound_alerts,
+                })
+              }
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardContent className="p-6">
+            <SectionHeader
+              icon={Send}
+              title="Notifications patients"
+              description="Canaux de notification pour les patients lors des changements de rendez-vous"
+            />
+            <div className="space-y-5">
+              <SwitchRow
+                label="Email patient"
+                description="Envoyer un email au patient pour chaque changement de statut de rendez-vous"
+                checked={settings.patient_notify_email}
+                onCheckedChange={(v) => update("patient_notify_email", v)}
+              />
+              <SwitchRow
+                label="WhatsApp patient"
+                description="Envoyer un message WhatsApp au patient (nécessite WhatsApp Business configuré)"
+                checked={settings.patient_notify_whatsapp}
+                onCheckedChange={(v) => update("patient_notify_whatsapp", v)}
+              />
+            </div>
+            <SaveButton
+              loading={saving === "patient-notifications"}
+              onClick={() =>
+                handleSave("patient-notifications", {
+                  patient_notify_email: settings.patient_notify_email,
+                  patient_notify_whatsapp: settings.patient_notify_whatsapp,
                 })
               }
             />

@@ -186,6 +186,16 @@ export async function POST(request: NextRequest) {
       console.error("Email error:", emailError);
     }
 
+    // Patient notification
+    try {
+      const { notifyPatient } = await import(
+        "@/lib/notifications/patient-notifications"
+      );
+      await notifyPatient({ event: "booking_created", booking });
+    } catch (e) {
+      console.error("Patient notification error:", e);
+    }
+
     return NextResponse.json({ success: true, booking });
   } catch (error) {
     console.error("Booking error:", error);

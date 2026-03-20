@@ -78,7 +78,7 @@ export async function PATCH(request: NextRequest) {
 
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id,date,time_slot_start,time_slot_end,patient_email")
+    .select("id,date,time_slot_start,time_slot_end,patient_email,patient_name,patient_phone,care_type")
     .eq("id", booking_id)
     .single();
 
@@ -168,6 +168,24 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
+  // Patient notification for date/time changes
+  if (wantsSlotUpdate && updated) {
+    try {
+      const { notifyPatient } = await import(
+        "@/lib/notifications/patient-notifications"
+      );
+      await notifyPatient({
+        event: "booking_modified",
+        booking: updated as import("@/types/database").Booking,
+        previousDate: booking.date,
+        previousTimeStart: booking.time_slot_start,
+        previousTimeEnd: booking.time_slot_end,
+      });
+    } catch (e) {
+      console.error("Patient notification error:", e);
+    }
+  }
+
   return NextResponse.json({ booking: updated });
 }
 
@@ -190,7 +208,7 @@ export async function DELETE(request: NextRequest) {
   const { booking_id } = parsed.data;
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id,status,patient_email")
+    .select("*")
     .eq("id", booking_id)
     .single();
 
@@ -216,6 +234,19 @@ export async function DELETE(request: NextRequest) {
       { error: "Impossible d'annuler le rendez-vous" },
       { status: 500 }
     );
+  }
+
+  // Patient notification for self-cancel
+  try {
+    const { notifyPatient } = await import(
+      "@/lib/notifications/patient-notifications"
+    );
+    await notifyPatient({
+      event: "booking_cancelled",
+      booking: booking as import("@/types/database").Booking,
+    });
+  } catch (e) {
+    console.error("Patient notification error:", e);
   }
 
   return NextResponse.json({ success: true });
