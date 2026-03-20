@@ -118,3 +118,23 @@ export interface ChatTranscript {
   created_at: string;
   updated_at: string;
 }
+
+export interface WhatsAppMessage {
+  role: "patient" | "ai" | "admin";
+  content: string;
+  timestamp: string;
+  whatsapp_message_id?: string;
+}
+
+export interface WhatsAppConversation {
+  id: string;
+  phone_number: string;
+  contact_name: string | null;
+  messages: WhatsAppMessage[];
+  is_ai_active: boolean;
+  care_type_suggested: string | null;
+  booking_intent: boolean;
+  last_message_at: string;
+  created_at: string;
+  updated_at: string;
+}
