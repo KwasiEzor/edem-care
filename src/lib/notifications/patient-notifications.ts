@@ -55,17 +55,26 @@ function toMessageContext(ctx: NotificationContext): MessageContext {
 }
 
 async function sendPatientEmail(msgCtx: MessageContext, email: string) {
-  if (!process.env.RESEND_API_KEY) return;
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[patient-notify] Skipped email: RESEND_API_KEY not set");
+    return;
+  }
 
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: "Edem-Care <notifications@edem-care.be>",
     to: email,
     subject: buildEmailSubject(msgCtx.event),
     html: buildEmailHtml(msgCtx),
   });
+
+  if (error) {
+    throw new Error(`Resend API error: ${error.name} — ${error.message}`);
+  }
+
+  console.log(`[patient-notify] Email sent to ${email} (id: ${data?.id})`);
 }
 
 async function sendPatientWhatsApp(msgCtx: MessageContext, phone: string) {
@@ -85,10 +94,14 @@ export async function notifyPatient(ctx: NotificationContext): Promise<void> {
     const msgCtx = toMessageContext(ctx);
     const tasks: Promise<void>[] = [];
 
+    console.log(
+      `[patient-notify] event=${ctx.event} email_enabled=${settings.patient_notify_email} whatsapp_enabled=${settings.patient_notify_whatsapp} patient_email=${ctx.booking.patient_email ?? "none"}`
+    );
+
     if (settings.patient_notify_email && ctx.booking.patient_email) {
       tasks.push(
         sendPatientEmail(msgCtx, ctx.booking.patient_email).catch((e) =>
-          console.error("Patient email notification error:", e)
+          console.error("[patient-notify] Email error:", e)
         )
       );
     }
@@ -96,13 +109,13 @@ export async function notifyPatient(ctx: NotificationContext): Promise<void> {
     if (settings.patient_notify_whatsapp && ctx.booking.patient_phone) {
       tasks.push(
         sendPatientWhatsApp(msgCtx, ctx.booking.patient_phone).catch((e) =>
-          console.error("Patient WhatsApp notification error:", e)
+          console.error("[patient-notify] WhatsApp error:", e)
         )
       );
     }
 
     await Promise.allSettled(tasks);
   } catch (e) {
-    console.error("Patient notification dispatch error:", e);
+    console.error("[patient-notify] Dispatch error:", e);
   }
 }
