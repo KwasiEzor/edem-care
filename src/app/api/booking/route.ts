@@ -3,13 +3,34 @@ import { bookingFormSchema } from "@/lib/validations";
 import { escapeHtml } from "@/lib/utils";
 import { getSettings } from "@/lib/settings";
 import { rateLimit } from "@/lib/rate-limit";
+import { validateTurnstileToken } from "@/lib/turnstile";
+import { env } from "@/lib/env";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limit by IP
+    const body = await request.json();
+
+    const parsed = bookingFormSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Données invalides" },
+        { status: 400 }
+      );
+    }
+
+    // Bot protection
+    const isBotValid = await validateTurnstileToken(parsed.data.turnstile_token);
+    if (!isBotValid) {
+      return NextResponse.json(
+        { error: "Validation anti-robot échouée" },
+        { status: 403 }
+      );
+    }
+
     const settings = await getSettings();
 
+    // Rate limit by IP
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
       "unknown";
@@ -18,16 +39,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Trop de demandes. Réessayez plus tard." },
         { status: 429 }
-      );
-    }
-
-    const body = await request.json();
-
-    const parsed = bookingFormSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Données invalides" },
-        { status: 400 }
       );
     }
 
@@ -98,74 +109,31 @@ export async function POST(request: NextRequest) {
 
     // Send admin notification
     try {
-      if (settings.notify_email_new_booking && process.env.RESEND_API_KEY) {
+      if (settings.notify_email_new_booking && env.RESEND_API_KEY) {
         const { Resend } = await import("resend");
-        const resend = new Resend(process.env.RESEND_API_KEY);
+        const { render } = await import("@react-email/components");
+        const { NewBookingAdminEmail } = await import("@/emails/new-booking-admin");
+        
+        const resend = new Resend(env.RESEND_API_KEY);
 
-        const patientName = escapeHtml(parsed.data.patient_name);
-        const patientEmail = escapeHtml(parsed.data.patient_email);
-        const patientPhone = escapeHtml(parsed.data.patient_phone);
-        const careType = escapeHtml(parsed.data.care_type);
-        const date = escapeHtml(parsed.data.date);
-        const timeStart = escapeHtml(parsed.data.time_slot_start);
-        const timeEnd = escapeHtml(parsed.data.time_slot_end);
-        const patientNotes = parsed.data.patient_notes
-          ? escapeHtml(parsed.data.patient_notes)
-          : null;
+        const emailHtml = await render(
+          NewBookingAdminEmail({
+            patientName: parsed.data.patient_name,
+            patientEmail: parsed.data.patient_email,
+            patientPhone: parsed.data.patient_phone,
+            careType: parsed.data.care_type,
+            date: parsed.data.date,
+            timeStart: parsed.data.time_slot_start,
+            timeEnd: parsed.data.time_slot_end,
+            patientNotes: parsed.data.patient_notes,
+          })
+        );
 
         await resend.emails.send({
           from: "Edem-Care <notifications@edem-care.be>",
-          to: process.env.ADMIN_EMAIL!,
-          subject: `Nouvelle demande de RDV - ${patientName}`,
-          html: `
-            <div style="font-family: 'DM Sans', sans-serif; max-width: 600px; margin: 0 auto; background: #F8FAFC; padding: 32px;">
-              <div style="background: #0B4DA2; padding: 24px; border-radius: 12px 12px 0 0;">
-                <h1 style="color: #ffffff; font-family: 'Garamond', serif; margin: 0; font-size: 24px;">
-                  Edem-Care
-                </h1>
-              </div>
-              <div style="background: #ffffff; padding: 24px; border-radius: 0 0 12px 12px;">
-                <h2 style="color: #0F172A; margin-top: 0;">Nouvelle demande de rendez-vous</h2>
-                <div style="background: #0B4DA210; border-left: 4px solid #F59E0B; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-bottom: 16px;">
-                  <p style="margin: 0; color: #0F172A; font-weight: 600;">En attente de confirmation</p>
-                </div>
-                <table style="width: 100%; border-collapse: collapse;">
-                  <tr>
-                    <td style="padding: 8px 0; color: #64748B; width: 120px;">Patient</td>
-                    <td style="padding: 8px 0; color: #0F172A; font-weight: 500;">${patientName}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #64748B;">Email</td>
-                    <td style="padding: 8px 0; color: #0F172A;">${patientEmail}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #64748B;">Téléphone</td>
-                    <td style="padding: 8px 0; color: #0F172A;">${patientPhone}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #64748B;">Date</td>
-                    <td style="padding: 8px 0; color: #0F172A; font-weight: 500;">${date}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #64748B;">Créneau</td>
-                    <td style="padding: 8px 0; color: #0F172A;">${timeStart} - ${timeEnd}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #64748B;">Type de soins</td>
-                    <td style="padding: 8px 0; color: #0F172A;">${careType}</td>
-                  </tr>
-                </table>
-                ${patientNotes ? `
-                <div style="margin-top: 16px; padding: 16px; background: #F8FAFC; border-radius: 8px;">
-                  <p style="color: #64748B; margin: 0 0 8px; font-size: 14px;">Notes du patient :</p>
-                  <p style="color: #0F172A; margin: 0;">${patientNotes}</p>
-                </div>` : ""}
-                <p style="margin-top: 24px; color: #64748B; font-size: 12px;">
-                  Connectez-vous au panel admin pour confirmer ou annuler ce rendez-vous.
-                </p>
-              </div>
-            </div>
-          `,
+          to: env.ADMIN_EMAIL!,
+          subject: `Nouvelle demande de RDV - ${parsed.data.patient_name}`,
+          html: emailHtml,
         });
       }
     } catch (emailError) {

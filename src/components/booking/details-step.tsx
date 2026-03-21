@@ -20,6 +20,7 @@ import { CARE_TYPE_LABELS } from "@/types/database";
 import { toast } from "sonner";
 import { useState } from "react";
 import type { BookingData } from "./booking-wizard";
+import { TurnstileWidget } from "@/components/ui/turnstile-widget";
 
 interface DetailsStepProps {
   data: Partial<BookingData>;
@@ -189,6 +190,10 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
               {...register("patient_notes")}
             />
           </div>
+
+          <TurnstileWidget
+            onSuccess={(token) => setValue("turnstile_token", token)}
+          />
 
           <Button
             type="submit"

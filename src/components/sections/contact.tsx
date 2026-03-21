@@ -21,6 +21,7 @@ import { Phone, Mail, MapPin, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { CARE_TYPE_LABELS } from "@/types/database";
 import { useTransition } from "react";
+import { TurnstileWidget } from "@/components/ui/turnstile-widget";
 
 export function Contact() {
   const [isPending, startTransition] = useTransition();
@@ -255,6 +256,10 @@ export function Contact() {
                       </p>
                     )}
                   </div>
+
+                  <TurnstileWidget
+                    onSuccess={(token) => setValue("turnstile_token", token)}
+                  />
 
                   <Button
                     type="submit"

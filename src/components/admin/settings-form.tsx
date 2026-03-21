@@ -270,7 +270,7 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
               >
                 <Select
                   value={settings.chatbot_model}
-                  onValueChange={(v) => update("chatbot_model", v)}
+                  onValueChange={(v) => update("chatbot_model", v || "claude-3-5-sonnet-latest")}
                 >
                   <SelectTrigger id="chatbot_model" className="w-full">
                     <SelectValue placeholder="Sélectionner un modèle" />

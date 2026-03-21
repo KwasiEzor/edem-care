@@ -19,6 +19,10 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().min(1).optional(),
   ADMIN_EMAIL: z.string().email().optional(),
 
+  // Bot Protection
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
+  TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+
   // Site
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
 });
@@ -34,5 +38,7 @@ export const env = envSchema.parse({
   WHATSAPP_APP_SECRET: process.env.WHATSAPP_APP_SECRET,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+  TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
 });

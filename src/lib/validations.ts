@@ -32,6 +32,7 @@ export const contactFormSchema = z.object({
     .min(10, "Le message doit contenir au moins 10 caractères")
     .max(2000, "Le message est trop long"),
   honeypot: z.string().max(0, "Spam détecté"),
+  turnstile_token: z.string().optional(),
 });
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;
@@ -60,6 +61,7 @@ export const bookingFormSchema = z.object({
     .string()
     .min(1)
     .regex(timeSlotRegex, "Format de créneau invalide"),
+  turnstile_token: z.string().optional(),
 });
 
 export type BookingFormData = z.infer<typeof bookingFormSchema>;

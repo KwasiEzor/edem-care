@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { logAudit } from "@/lib/audit";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -54,6 +55,36 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Update the booking status
+    const { data: updatedBooking, error: updateError } = await supabase
+      .from("bookings")
+      .update({
+        status,
+        admin_notes: notes || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", bookingId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error("DB Update error:", updateError);
+      return NextResponse.json(
+        { error: "Erreur lors de la mise à jour" },
+        { status: 500 }
+      );
+    }
+
+    // Audit Log
+    await logAudit({
+      adminId: user.id,
+      action: status === "confirmed" ? "CONFIRM_BOOKING" : "CANCEL_BOOKING",
+      entityType: "bookings",
+      entityId: bookingId,
+      oldData: { status: booking.status },
+      newData: { status, notes },
+    });
 
     // Patient notification (email + WhatsApp based on settings)
     try {
