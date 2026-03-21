@@ -43,7 +43,7 @@ export function SuccessStep({ data }: SuccessStepProps) {
           </motion.div>
 
           <h2 className="mt-6 font-heading text-3xl font-bold text-ink">
-            Demande envoyee !
+            Demande envoyée !
           </h2>
           <p className="mx-auto mt-3 max-w-md text-muted-custom">
             Votre demande de rendez-vous a bien été enregistrée. Nous vous

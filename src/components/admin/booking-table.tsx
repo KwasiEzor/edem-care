@@ -52,6 +52,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useRouter } from "next/navigation";
+import { VoiceNotesInput } from "./voice-notes-input";
 
 const PAGE_SIZE = 10;
 
@@ -522,7 +523,12 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
               )}
 
               <div className="space-y-2">
-                <Label>Notes administrateur</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Notes administrateur</Label>
+                  <VoiceNotesInput 
+                    onTranscript={(text) => setAdminNotes(prev => prev ? `${prev} ${text}` : text)} 
+                  />
+                </div>
                 <Textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}

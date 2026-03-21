@@ -132,7 +132,7 @@ export function Navbar() {
                 </div>
                 <div className="mt-8 rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-sm">
                   <p className="text-sm font-semibold text-ink">
-                    Besoin d&apos;une reponse rapide ?
+                    Besoin d&apos;une réponse rapide ?
                   </p>
                   <p className="mt-1 text-sm leading-6 text-muted-custom">
                     Contactez-nous pour organiser vos soins ou obtenir des renseignements.

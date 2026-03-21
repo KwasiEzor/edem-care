@@ -63,10 +63,10 @@ export function TimeStep({ date, selectedSlot, onSelect, onBack }: TimeStepProps
           </Button>
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-700">
-              Etape 2
+              Étape 2
             </p>
             <h2 className="font-heading text-3xl font-semibold text-ink">
-              Choisissez un creneau
+              Choisissez un créneau
             </h2>
             <p className="text-sm text-muted-custom capitalize">
               {formattedDate}
@@ -82,7 +82,7 @@ export function TimeStep({ date, selectedSlot, onSelect, onBack }: TimeStepProps
           <div className="rounded-[1.6rem] border border-slate-200 bg-slate-50/80 py-12 text-center">
             <Clock className="h-12 w-12 text-muted-custom/30 mx-auto mb-4" />
             <p className="text-muted-custom">
-              Aucun creneau disponible pour cette date.
+              Aucun créneau disponible pour cette date.
             </p>
             <Button
               variant="outline"

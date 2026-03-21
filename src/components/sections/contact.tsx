@@ -140,8 +140,8 @@ export function Contact() {
             <div className="mt-6 rounded-[1.4rem] border border-white/12 bg-white/10 p-4">
               <p className="text-sm font-semibold text-white">Ce que vous pouvez nous envoyer</p>
               <p className="mt-2 text-sm leading-6 text-blue-100/78">
-                Vos coordonnees, le type de soins souhaites, votre disponibilite
-                et toute information utile pour preparer la prise en charge.
+                Vos coordonnées, le type de soins souhaités, votre disponibilité
+                et toute information utile pour préparer la prise en charge.
               </p>
             </div>
           </div>

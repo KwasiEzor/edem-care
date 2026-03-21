@@ -90,17 +90,17 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
           </Button>
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-700">
-              Etape 3
+              Étape 3
             </p>
             <h2 className="font-heading text-3xl font-semibold text-ink">
-              Vos coordonnees
+              Vos coordonnées
             </h2>
           </div>
         </div>
 
         <div className="mb-6 rounded-[1.6rem] border border-cyan-100 bg-cyan-50/70 p-4 text-sm text-cyan-900">
-          Les informations demandees servent uniquement a traiter votre demande
-          de rendez-vous et a vous recontacter.
+          Les informations demandées servent uniquement à traiter votre demande
+          de rendez-vous et à vous recontacter.
         </div>
 
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5">

@@ -12,7 +12,7 @@ import { SuccessStep } from "./success-step";
 const steps = [
   { id: 1, label: "Date", icon: Calendar },
   { id: 2, label: "Créneau", icon: Clock },
-  { id: 3, label: "Details", icon: User },
+  { id: 3, label: "Détails", icon: User },
 ];
 
 export type BookingData = {
@@ -55,7 +55,7 @@ export function BookingWizard({ maxDays = 60, allowSundays = false }: BookingWiz
           Parcours
         </p>
         <h2 className="mt-3 font-heading text-3xl font-bold text-ink">
-          Une reservation guidee en trois etapes.
+          Une réservation guidée en trois étapes.
         </h2>
         <div className="mt-8 space-y-4">
           {steps.map((step) => {
@@ -87,7 +87,7 @@ export function BookingWizard({ maxDays = 60, allowSundays = false }: BookingWiz
                   </div>
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-custom">
-                      Etape {step.id}
+                      Étape {step.id}
                     </p>
                     <p className="mt-1 text-lg font-semibold text-ink">{step.label}</p>
                   </div>
@@ -100,17 +100,17 @@ export function BookingWizard({ maxDays = 60, allowSundays = false }: BookingWiz
         <div className="mt-8 rounded-[1.6rem] bg-[linear-gradient(180deg,#0b4da2_0%,#0f67cc_100%)] p-5 text-white">
           <div className="flex items-center gap-3">
             <FileText className="h-5 w-5 text-cyan-200" />
-            <p className="font-semibold">Resume de la demande</p>
+            <p className="font-semibold">Résumé de la demande</p>
           </div>
           <div className="mt-4 space-y-3 text-sm text-blue-100/82">
             <div className="rounded-2xl border border-white/12 bg-white/10 px-4 py-3">
-              Date : {bookingData.date || "A selectionner"}
+              Date : {bookingData.date || "À sélectionner"}
             </div>
             <div className="rounded-2xl border border-white/12 bg-white/10 px-4 py-3">
-              Creneau : {bookingData.time_slot_start ? `${bookingData.time_slot_start.slice(0, 5)} - ${bookingData.time_slot_end?.slice(0, 5)}` : "A selectionner"}
+              Créneau : {bookingData.time_slot_start ? `${bookingData.time_slot_start.slice(0, 5)} - ${bookingData.time_slot_end?.slice(0, 5)}` : "À sélectionner"}
             </div>
             <div className="rounded-2xl border border-white/12 bg-white/10 px-4 py-3">
-              Soins : {bookingData.care_type || "A preciser"}
+              Soins : {bookingData.care_type || "À préciser"}
             </div>
           </div>
         </div>

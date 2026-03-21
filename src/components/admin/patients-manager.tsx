@@ -30,6 +30,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Plus, Pencil, Trash2, Users, Loader2, Phone, MapPin, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { VoiceNotesInput } from "./voice-notes-input";
 
 const PAGE_SIZE = 10;
 
@@ -420,7 +421,12 @@ export function PatientsManager({ initialPatients }: PatientsManagerProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label>Notes</Label>
+              <div className="flex items-center justify-between">
+                <Label>Notes</Label>
+                <VoiceNotesInput 
+                  onTranscript={(text) => setForm(f => ({ ...f, notes: f.notes ? `${f.notes} ${text}` : text }))} 
+                />
+              </div>
               <Textarea
                 value={form.notes}
                 onChange={(e) =>

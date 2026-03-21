@@ -42,7 +42,7 @@ export function Footer() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-[1.5rem] border border-white/12 bg-white/10 p-5">
                 <Clock3 className="h-5 w-5 text-cyan-200" />
-                <p className="mt-4 text-lg font-semibold">Disponibilite 7j/7</p>
+                <p className="mt-4 text-lg font-semibold">Disponibilité 7j/7</p>
                 <p className="mt-2 text-sm leading-6 text-blue-100/78">
                   Réponse rapide pour organiser les soins et orienter votre demande.
                 </p>
@@ -122,21 +122,21 @@ export function Footer() {
             <ul className="mt-4 space-y-3 text-sm text-blue-100/78">
               <li>
                 <Link href="/mentions-legales" className="transition-colors hover:text-white">
-                  Mentions legales
+                  Mentions légales
                 </Link>
               </li>
               <li>
                 <CookieSettingsButton />
               </li>
-              <li>N° INAMI : a completer</li>
-              <li>N° BCE : a completer</li>
+              <li>N° INAMI : à compléter</li>
+              <li>N° BCE : à compléter</li>
             </ul>
           </div>
         </div>
 
         <div className="mt-10 flex flex-col gap-3 border-t border-white/12 pt-6 text-sm text-blue-100/60 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} Edem-Care. Tous droits reserves.</p>
-          <p>Site concu pour une experience simple, claire et rassurante.</p>
+          <p>&copy; {new Date().getFullYear()} Edem-Care. Tous droits réservés.</p>
+          <p>Site conçu pour une expérience simple, claire et rassurante.</p>
         </div>
       </div>
     </footer>

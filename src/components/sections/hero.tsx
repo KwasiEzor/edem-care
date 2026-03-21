@@ -24,7 +24,7 @@ const trustMetrics = [
 
 const serviceHighlights = [
   "Pansements et injections",
-  "Suivi diabetique",
+  "Suivi diabétique",
   "Prises de sang",
 ];
 
@@ -70,7 +70,7 @@ export function Hero() {
                 <span className="hidden h-4 w-px bg-white/20 sm:block" />
                 <span className="inline-flex items-center gap-2 text-white/80">
                   <ShieldCheck className="h-4 w-4" />
-                  Equipe professionnelle et agregee
+                  Équipe professionnelle et agréée
                 </span>
               </motion.div>
 
@@ -88,9 +88,9 @@ export function Hero() {
                 variants={fadeUp}
                 className="mt-6 max-w-xl text-base leading-7 text-blue-50/90 sm:text-lg"
               >
-                Edem-Care accompagne chaque patient avec une presence
+                Edem-Care accompagne chaque patient avec une présence
                 rassurante, des interventions rapides et un suivi infirmier
-                humain, precis et coordonne.
+                humain, précis et coordonné.
               </motion.p>
 
               <motion.div
@@ -217,8 +217,8 @@ export function Hero() {
                   Services essentiels
                 </p>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-custom sm:text-base">
-                  Une prise en charge serieuse pour les soins quotidiens, les
-                  suivis post-hospitalisation et les interventions techniques a
+                  Une prise en charge sérieuse pour les soins quotidiens, les
+                  suivis post-hospitalisation et les interventions techniques à
                   domicile.
                 </p>
               </div>
@@ -248,7 +248,7 @@ export function Hero() {
             <Stethoscope className="h-5 w-5 text-forest" />
             <p className="mt-3 font-semibold">Suivi infirmier complet</p>
             <p className="mt-1 text-sm leading-6 text-muted-custom">
-              Coordination des soins et surveillance reguliere.
+              Coordination des soins et surveillance régulière.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -260,14 +260,14 @@ export function Hero() {
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <ShieldCheck className="h-5 w-5 text-forest" />
-            <p className="mt-3 font-semibold">Qualite et securite</p>
+            <p className="mt-3 font-semibold">Qualité et sécurité</p>
             <p className="mt-1 text-sm leading-6 text-muted-custom">
-              Protocoles rigoureux et soins adaptes au patient.
+              Protocoles rigoureux et soins adaptés au patient.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <Clock3 className="h-5 w-5 text-cyan-600" />
-            <p className="mt-3 font-semibold">Disponibilite et reactivite</p>
+            <p className="mt-3 font-semibold">Disponibilité et réactivité</p>
             <p className="mt-1 text-sm leading-6 text-muted-custom">
                   Réponse claire pour les besoins planifiés ou urgents.
             </p>

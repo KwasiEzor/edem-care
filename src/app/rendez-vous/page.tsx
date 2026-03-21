@@ -27,7 +27,7 @@ export default async function RendezVousPage() {
               Rendez-vous
                 </span>
                 <h1 className="mt-4 font-heading text-3xl font-bold sm:text-4xl lg:text-5xl">
-                  Prenez rendez-vous dans un parcours clair et guide.
+                  Prenez rendez-vous dans un parcours clair et guidé.
                 </h1>
                 <p className="mt-4 max-w-2xl text-base leading-7 text-blue-100/84">
               Choisissez la date et le créneau qui vous conviennent, puis
@@ -39,9 +39,9 @@ export default async function RendezVousPage() {
                   Ce qu&apos;il faut savoir
                 </p>
                 <ul className="mt-4 space-y-3 text-sm text-blue-100/82">
-                  <li>Reservation en 3 etapes</li>
-                  <li>Choix de date et de creneau disponibles</li>
-                  <li>Confirmation apres validation de la demande</li>
+                  <li>Réservation en 3 étapes</li>
+                  <li>Choix de date et de créneau disponibles</li>
+                  <li>Confirmation après validation de la demande</li>
                 </ul>
               </div>
             </div>

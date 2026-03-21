@@ -84,17 +84,17 @@ export function Services() {
               Nos services
             </span>
             <h2 className="mt-4 font-heading text-3xl font-bold text-ink sm:text-4xl lg:text-5xl">
-              Une offre complete de soins, avec une presentation claire et rassurante.
+              Une offre complète de soins, avec une présentation claire et rassurante.
             </h2>
           </div>
           <div className="rounded-[1.8rem] border border-slate-200 bg-white/90 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm">
             <p className="text-base leading-7 text-muted-custom">
-              Chaque intervention est pensee pour simplifier le parcours du patient :
+              Chaque intervention est pensée pour simplifier le parcours du patient :
               soins techniques, suivi quotidien, coordination avec les professionnels
-              de sante et accompagnement adapte a la situation.
+              de santé et accompagnement adapté à la situation.
             </p>
             <div className="mt-5 flex flex-wrap gap-3 text-sm">
-              {["Suivi post-hospitalisation", "Soins reguliers", "Interventions techniques"].map((item) => (
+              {["Suivi post-hospitalisation", "Soins réguliers", "Interventions techniques"].map((item) => (
                 <span
                   key={item}
                   className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 font-medium text-ink"
@@ -132,7 +132,7 @@ export function Services() {
                     {service.description}
                   </p>
                   <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-forest">
-                    Soins adaptes
+                    Soins adaptés
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </div>
                 </CardContent>

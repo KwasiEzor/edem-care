@@ -15,21 +15,21 @@ export default function MentionsLegales() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,#eef7ff_0%,#ffffff_58%,#f5fcff_100%)] px-6 py-10 shadow-[0_24px_60px_rgba(15,23,42,0.05)] sm:px-8 lg:px-12">
             <span className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">
-              Informations legales
+              Informations légales
             </span>
             <h1 className="mt-4 font-heading text-4xl font-bold text-ink">
-              Mentions legales
+              Mentions légales
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-muted-custom">
-              Les informations juridiques et les engagements de confidentialite
-              d&apos;Edem-Care sont presentes ici dans un format plus lisible.
+              Les informations juridiques et les engagements de confidentialité
+              d&apos;Edem-Care sont présentés ici dans un format plus lisible.
             </p>
           </div>
 
           <div className="mt-10 space-y-6">
             <section className="rounded-[1.6rem] border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="font-heading text-2xl text-ink mb-4">
-                1. Editeur du site
+                1. Éditeur du site
               </h2>
               <p className="text-sm leading-7 text-muted-custom">
                 <strong className="text-ink">Edem-Care</strong>
@@ -50,7 +50,7 @@ export default function MentionsLegales() {
 
             <section className="rounded-[1.6rem] border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="font-heading text-2xl text-ink mb-4">
-                2. Hebergeur
+                2. Hébergeur
               </h2>
               <p className="text-sm leading-7 text-muted-custom">
                 Ce site est hébergé par Vercel Inc., 440 N Barranca Ave #4133,
@@ -60,7 +60,7 @@ export default function MentionsLegales() {
 
             <section className="rounded-[1.6rem] border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="font-heading text-2xl text-ink mb-4">
-                3. Propriete intellectuelle
+                3. Propriété intellectuelle
               </h2>
               <p className="text-sm leading-7 text-muted-custom">
                 L&apos;ensemble du contenu de ce site (textes, images, logo,
@@ -72,7 +72,7 @@ export default function MentionsLegales() {
 
             <section className="rounded-[1.6rem] border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="font-heading text-2xl text-ink mb-4">
-                4. Protection des donnees personnelles (RGPD)
+                4. Protection des données personnelles (RGPD)
               </h2>
 
               <h3 className="font-semibold text-ink mt-6 mb-2">
@@ -84,7 +84,7 @@ export default function MentionsLegales() {
               </p>
 
               <h3 className="font-semibold text-ink mt-6 mb-2">
-                4.2 Donnees collectees
+                4.2 Données collectées
               </h3>
               <p className="text-sm leading-7 text-muted-custom">
                 Les données personnelles collectées via les formulaires de
@@ -93,7 +93,7 @@ export default function MentionsLegales() {
               </p>
 
               <h3 className="font-semibold text-ink mt-6 mb-2">
-                4.3 Finalite du traitement
+                4.3 Finalité du traitement
               </h3>
               <p className="text-sm leading-7 text-muted-custom">
                 Vos données sont utilisées uniquement pour répondre à vos
@@ -103,7 +103,7 @@ export default function MentionsLegales() {
               </p>
 
               <h3 className="font-semibold text-ink mt-6 mb-2">
-                4.4 Duree de conservation
+                4.4 Durée de conservation
               </h3>
               <p className="text-sm leading-7 text-muted-custom">
                 Les données sont conservées pour la durée nécessaire au
@@ -145,7 +145,7 @@ export default function MentionsLegales() {
 
             <section className="rounded-[1.6rem] border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="font-heading text-2xl text-ink mb-4">
-                6. Limitation de responsabilite
+                6. Limitation de responsabilité
               </h2>
               <p className="text-sm leading-7 text-muted-custom">
                 Les informations présentes sur ce site sont fournies à titre

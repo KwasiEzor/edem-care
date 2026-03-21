@@ -59,7 +59,7 @@ export function DateStep({ selectedDate, maxDays = 60, allowSundays = false, onS
       <CardContent className="p-6 lg:p-8">
         <div className="mb-8">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-700">
-            Etape 1
+            Étape 1
           </p>
           <h2 className="mt-2 font-heading text-3xl font-semibold text-ink">
             Choisissez une date
