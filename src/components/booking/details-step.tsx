@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import type { BookingData } from "./booking-wizard";
 import { TurnstileWidget } from "@/components/ui/turnstile-widget";
+import { env } from "@/lib/env";
 
 interface DetailsStepProps {
   data: Partial<BookingData>;
@@ -30,6 +31,9 @@ interface DetailsStepProps {
 
 export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
+  const turnstileEnabled = !!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const {
     register,
@@ -46,12 +50,17 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
   });
 
   const onFormSubmit = async (formData: BookingFormData) => {
+    if (turnstileEnabled && !turnstileToken) {
+      toast.error("Veuillez patienter pendant la validation anti-robot");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, turnstile_token: turnstileToken }),
       });
 
       const result = await res.json();
@@ -192,12 +201,15 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
           </div>
 
           <TurnstileWidget
-            onSuccess={(token) => setValue("turnstile_token", token)}
+            onSuccess={(token) => {
+              setTurnstileToken(token);
+              setValue("turnstile_token", token);
+            }}
           />
 
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || (turnstileEnabled && !turnstileToken)}
             className="h-12 w-full rounded-full bg-forest text-base shadow-lg shadow-blue-900/10 hover:bg-forest/90"
           >
             {isSubmitting ? (

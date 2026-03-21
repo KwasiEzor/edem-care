@@ -20,11 +20,15 @@ import { Phone, Mail, MapPin, Send, Loader2 } from "lucide-react";
 
 import { toast } from "sonner";
 import { CARE_TYPE_LABELS } from "@/types/database";
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { TurnstileWidget } from "@/components/ui/turnstile-widget";
+import { env } from "@/lib/env";
 
 export function Contact() {
   const [isPending, startTransition] = useTransition();
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
+  const turnstileEnabled = !!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const {
     register,
@@ -40,14 +44,20 @@ export function Contact() {
   });
 
   const onSubmit = (data: ContactFormData) => {
+    if (turnstileEnabled && !turnstileToken) {
+      toast.error("Veuillez patienter pendant la validation anti-robot");
+      return;
+    }
+
     startTransition(async () => {
       try {
-        const result = await submitContact(data);
+        const result = await submitContact({ ...data, turnstile_token: turnstileToken || undefined });
         if (result.success) {
           toast.success("Message envoyé avec succès !", {
             description: "Nous vous répondrons dans les plus brefs délais.",
           });
           reset();
+          setTurnstileToken(null);
         } else {
           toast.error("Erreur lors de l'envoi", {
             description: result.error || "Veuillez réessayer plus tard.",
@@ -258,15 +268,17 @@ export function Contact() {
                   </div>
 
                   <TurnstileWidget
-                    onSuccess={(token) => setValue("turnstile_token", token)}
+                   onSuccess={(token) => {
+                     setTurnstileToken(token);
+                     setValue("turnstile_token", token);
+                   }}
                   />
 
                   <Button
-                    type="submit"
-                    disabled={isPending}
-                    className="h-12 w-full rounded-full bg-forest text-base shadow-lg shadow-blue-900/10 hover:bg-forest/90"
-                  >
-                    {isPending ? (
+                   type="submit"
+                   disabled={isPending || (turnstileEnabled && !turnstileToken)}
+                   className="h-12 w-full rounded-full bg-forest text-base shadow-lg shadow-blue-900/10 hover:bg-forest/90"
+                  >                    {isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <Send className="h-4 w-4" />

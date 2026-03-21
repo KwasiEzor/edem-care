@@ -1,18 +1,19 @@
 import { env } from "@/lib/env";
 
 export async function validateTurnstileToken(token?: string) {
-  // If no secret key is configured, we skip validation (allows dev/CI)
-  if (!env.TURNSTILE_SECRET_KEY) {
+  // If keys are not configured, we skip validation (allows dev/CI or partial configuration)
+  if (!env.TURNSTILE_SECRET_KEY || !env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
     if (process.env.NODE_ENV === "development") {
-      console.warn("Turnstile secret key missing. Skipping validation.");
-      return true;
+      console.warn("Turnstile keys missing. Skipping validation.");
     }
-    // In prod, if the key is missing but Turnstile is enabled in UI, it will fail
-    // This is a safety measure.
     return true;
   }
 
-  if (!token) return false;
+  // If we have keys but no token was provided, it's a validation failure
+  if (!token) {
+    console.error("Turnstile token missing while keys are configured.");
+    return false;
+  }
 
   const response = await fetch(
     "https://challenges.cloudflare.com/turnstile/v0/siteverify",
