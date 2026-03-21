@@ -2,11 +2,11 @@
 
 import dynamic from "next/dynamic";
 
-const CookieBanner = dynamic(
-  () => import("./cookie-banner").then((m) => m.CookieBanner),
+const CookieConsentManager = dynamic(
+  () => import("./cookie-consent-manager").then((m) => m.CookieConsentManager),
   { ssr: false }
 );
 
 export function LazyCookieBanner() {
-  return <CookieBanner />;
+  return <CookieConsentManager />;
 }

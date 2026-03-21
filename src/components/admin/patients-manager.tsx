@@ -11,11 +11,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -296,46 +297,41 @@ export function PatientsManager({ initialPatients }: PatientsManagerProps) {
 
                     <div className="flex items-center gap-2">
                       {patient.phone && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-9 gap-1.5 text-xs"
-                          asChild
+                        <a 
+                          href={`tel:${patient.phone}`}
+                          className={cn(
+                            buttonVariants({ variant: "outline", size: "sm" }),
+                            "flex-1 h-9 gap-1.5 text-xs"
+                          )}
                         >
-                          <a href={`tel:${patient.phone}`}>
-                            <Phone className="h-3.5 w-3.5 text-forest" />
-                            Appeler
-                          </a>
-                        </Button>
+                          <Phone className="h-3.5 w-3.5 text-forest" />
+                          Appeler
+                        </a>
                       )}
                       {patient.address && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-9 gap-1.5 text-xs"
-                          asChild
+                        <a 
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(patient.address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(
+                            buttonVariants({ variant: "outline", size: "sm" }),
+                            "flex-1 h-9 gap-1.5 text-xs"
+                          )}
                         >
-                          <a 
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(patient.address)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <MapPin className="h-3.5 w-3.5 text-cyan-600" />
-                            GPS
-                          </a>
-                        </Button>
+                          <MapPin className="h-3.5 w-3.5 text-cyan-600" />
+                          GPS
+                        </a>
                       )}
                       {patient.email && (
-                        <Button
-                          variant="secondary"
-                          size="icon"
-                          className="h-9 w-9 shrink-0"
-                          asChild
+                        <a 
+                          href={`mailto:${patient.email}`}
+                          className={cn(
+                            buttonVariants({ variant: "secondary", size: "icon" }),
+                            "h-9 w-9 shrink-0"
+                          )}
                         >
-                          <a href={`mailto:${patient.email}`}>
-                            <Mail className="h-4 w-4 text-slate-600" />
-                          </a>
-                        </Button>
+                          <Mail className="h-4 w-4 text-slate-600" />
+                        </a>
                       )}
                     </div>
                   </div>

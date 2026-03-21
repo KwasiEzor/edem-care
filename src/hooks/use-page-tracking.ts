@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { getStoredConsent } from "@/lib/cookie-consent";
 
 function getSessionHash(): string {
   const key = "edem_session";
@@ -37,8 +38,24 @@ function getReferrerDomain(): string | null {
 export function usePageTracking() {
   const pathname = usePathname();
   const lastTracked = useRef<string>("");
+  const [hasConsent, setHasConsent] = useState(false);
 
   useEffect(() => {
+    const checkConsent = () => {
+      const consent = getStoredConsent();
+      setHasConsent(!!consent?.analytics);
+    };
+
+    checkConsent();
+    window.addEventListener("cookie-consent-updated", checkConsent);
+    return () =>
+      window.removeEventListener("cookie-consent-updated", checkConsent);
+  }, []);
+
+  useEffect(() => {
+    // Only track if analytics consent is given
+    if (!hasConsent) return;
+
     // Skip admin routes
     if (pathname.startsWith("/admin")) return;
     // Skip duplicate tracking for same path
@@ -60,5 +77,5 @@ export function usePageTracking() {
     }).catch(() => {
       // Silent fail
     });
-  }, [pathname]);
+  }, [pathname, hasConsent]);
 }

@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -34,6 +34,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SearchInput } from "@/components/ui/search-input";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { cn } from "@/lib/utils";
 import {
   Check,
   X,
@@ -342,33 +343,29 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 h-9 gap-1.5 text-xs"
-                        asChild
+                      <a 
+                        href={`tel:${booking.patient_phone}`}
+                        className={cn(
+                          buttonVariants({ variant: "outline", size: "sm" }),
+                          "flex-1 h-9 gap-1.5 text-xs"
+                        )}
                       >
-                        <a href={`tel:${booking.patient_phone}`}>
-                          <Phone className="h-3.5 w-3.5 text-forest" />
-                          Appeler
-                        </a>
-                      </Button>
+                        <Phone className="h-3.5 w-3.5 text-forest" />
+                        Appeler
+                      </a>
                       {booking.patient_address && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-9 gap-1.5 text-xs"
-                          asChild
+                        <a 
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(booking.patient_address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(
+                            buttonVariants({ variant: "outline", size: "sm" }),
+                            "flex-1 h-9 gap-1.5 text-xs"
+                          )}
                         >
-                          <a 
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(booking.patient_address)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <MapPin className="h-3.5 w-3.5 text-cyan-600" />
-                            GPS
-                          </a>
-                        </Button>
+                          <MapPin className="h-3.5 w-3.5 text-cyan-600" />
+                          GPS
+                        </a>
                       )}
                       <Button
                         variant="secondary"

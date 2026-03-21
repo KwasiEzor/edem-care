@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Clock3, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
+import { CookieSettingsButton } from "./cookie-settings-button";
 
 export function Footer() {
   return (
@@ -123,6 +124,9 @@ export function Footer() {
                 <Link href="/mentions-legales" className="transition-colors hover:text-white">
                   Mentions legales
                 </Link>
+              </li>
+              <li>
+                <CookieSettingsButton />
               </li>
               <li>N° INAMI : a completer</li>
               <li>N° BCE : a completer</li>
