@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
 import type { Notification, NotificationType } from "@/types/database";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,34 +18,41 @@ import {
   MessageSquare,
   CheckCheck,
   Bell,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { toast } from "sonner";
+import { useNotifications } from "@/hooks/use-notifications";
+import Link from "next/link";
 
 const TYPE_CONFIG: Record<
   NotificationType,
-  { label: string; icon: typeof Bell; color: string }
+  { label: string; icon: typeof Bell; color: string; link?: (data: any) => string }
 > = {
   new_booking: {
     label: "Nouveau RDV",
     icon: CalendarDays,
     color: "text-forest",
+    link: (data: any) => data?.booking_id ? `/admin/rendez-vous` : "/admin/rendez-vous",
   },
   new_contact: {
     label: "Nouveau message",
     icon: MessageSquare,
     color: "text-secondary",
+    link: () => "/admin/contacts",
   },
   booking_confirmed: {
     label: "RDV confirmé",
     icon: CheckCheck,
     color: "text-forest",
+    link: () => "/admin/rendez-vous",
   },
   booking_cancelled: {
     label: "RDV annulé",
     icon: Bell,
     color: "text-destructive",
+    link: () => "/admin/rendez-vous",
   },
 };
 
@@ -57,58 +63,15 @@ interface NotificationsCenterProps {
 export function NotificationsCenter({
   initialNotifications,
 }: NotificationsCenterProps) {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    markAllRead, 
+    deleteNotification 
+  } = useNotifications(initialNotifications);
+  
   const [filter, setFilter] = useState<string>("all");
-
-  // Realtime subscription
-  useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase
-      .channel("notifications-page")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-        },
-        (payload) => {
-          const newNotif = payload.new as Notification;
-          setNotifications((prev) => [newNotif, ...prev]);
-          toast.info(newNotif.title, {
-            description: newNotif.message,
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const markAsRead = async (id: string) => {
-    const supabase = createClient();
-    await supabase
-      .from("notifications")
-      .update({ is_read: true })
-      .eq("id", id);
-
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-    );
-  };
-
-  const markAllRead = async () => {
-    const supabase = createClient();
-    await supabase
-      .from("notifications")
-      .update({ is_read: true })
-      .eq("is_read", false);
-
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    toast.success("Toutes les notifications marquées comme lues");
-  };
 
   const filtered =
     filter === "all"
@@ -117,15 +80,13 @@ export function NotificationsCenter({
         ? notifications.filter((n) => !n.is_read)
         : notifications.filter((n) => n.type === filter);
 
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
-
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-4">
           <Select value={filter} onValueChange={(v) => v && setFilter(String(v))}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filtrer" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Toutes</SelectItem>
@@ -135,7 +96,9 @@ export function NotificationsCenter({
             </SelectContent>
           </Select>
           {unreadCount > 0 && (
-            <Badge variant="outline">{unreadCount} non lue(s)</Badge>
+            <Badge variant="secondary" className="bg-forest/10 text-forest border-forest/20">
+              {unreadCount} non lue(s)
+            </Badge>
           )}
         </div>
         {unreadCount > 0 && (
@@ -146,15 +109,19 @@ export function NotificationsCenter({
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="grid gap-3">
         {filtered.length === 0 ? (
-          <Card>
+          <Card className="border-dashed">
             <CardContent className="p-0">
               <EmptyState
                 icon={Bell}
                 title="Aucune notification"
-                description="Les nouvelles notifications apparaîtront ici en temps réel."
-                className="py-12"
+                description={
+                  filter === "unread" 
+                    ? "Vous avez lu toutes vos notifications. Bien joué !" 
+                    : "Les nouvelles notifications apparaîtront ici en temps réel."
+                }
+                className="py-16"
               />
             </CardContent>
           </Card>
@@ -162,43 +129,90 @@ export function NotificationsCenter({
           filtered.map((notif) => {
             const config = TYPE_CONFIG[notif.type];
             const Icon = config.icon;
+            const link = config.link?.(notif.data);
 
             return (
               <Card
                 key={notif.id}
-                className={`cursor-pointer transition-colors hover:bg-muted/30 ${
-                  !notif.is_read ? "border-forest/20 bg-forest/5" : ""
+                className={`group transition-all duration-200 hover:shadow-md ${
+                  !notif.is_read ? "border-forest/30 bg-forest/[0.02]" : "bg-white"
                 }`}
-                onClick={() => !notif.is_read && markAsRead(notif.id)}
               >
-                <CardContent className="p-4 flex items-start gap-4">
-                  <div
-                    className={`w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 ${config.color}`}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      {!notif.is_read && (
-                        <span className="w-2 h-2 bg-forest rounded-full shrink-0" />
-                      )}
-                      <p className="text-sm font-medium text-ink">
-                        {notif.title}
-                      </p>
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${config.color}`}
+                    >
+                      <Icon className="h-6 w-6" />
                     </div>
-                    <p className="text-sm text-muted-custom mt-0.5">
-                      {notif.message}
-                    </p>
-                    <p className="text-xs text-muted-custom/60 mt-1">
-                      {formatDistanceToNow(new Date(notif.created_at), {
-                        addSuffix: true,
-                        locale: fr,
-                      })}
-                    </p>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {!notif.is_read && (
+                            <span className="w-2.5 h-2.5 bg-forest rounded-full shrink-0 animate-pulse" />
+                          )}
+                          <h3 className={`text-base font-semibold truncate ${!notif.is_read ? "text-ink" : "text-muted-custom"}`}>
+                            {notif.title}
+                          </h3>
+                        </div>
+                        <Badge variant="outline" className="hidden sm:inline-flex shrink-0 text-[10px] uppercase tracking-wider font-bold py-0.5">
+                          {config.label}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-sm text-muted-custom mt-1 leading-relaxed">
+                        {notif.message}
+                      </p>
+                      
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3">
+                        <span className="text-xs text-muted-custom/60 flex items-center gap-1">
+                          <Bell className="h-3 w-3" />
+                          {formatDistanceToNow(new Date(notif.created_at), {
+                            addSuffix: true,
+                            locale: fr,
+                          })}
+                        </span>
+                        
+                        <div className="flex items-center gap-2 ml-auto">
+                          {link && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-xs font-medium text-forest hover:text-forest hover:bg-forest/5"
+                              render={
+                                <Link href={link}>
+                                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                                  Voir les détails
+                                </Link>
+                              }
+                            />
+                          )}
+                          
+                          {!notif.is_read && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 text-xs font-medium"
+                              onClick={() => markAsRead(notif.id)}
+                            >
+                              <CheckCheck className="h-3.5 w-3.5 mr-1.5" />
+                              Marquer lu
+                            </Button>
+                          )}
+                          
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 text-xs font-medium text-muted-custom hover:text-destructive hover:bg-destructive/5 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => deleteNotification(notif.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="shrink-0 text-xs">
-                    {config.label}
-                  </Badge>
                 </CardContent>
               </Card>
             );

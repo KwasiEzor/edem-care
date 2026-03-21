@@ -170,11 +170,8 @@ export function ChatWidget() {
                         <Button
                           size="sm"
                           className="h-9 w-full rounded-full bg-red-600 text-white hover:bg-red-700 flex items-center justify-center font-bold"
-                          asChild
-                        >
-                          <a href="tel:112">Appeler le 112</a>
-                        </Button>
-                      </div>
+                          render={<a href="tel:112">Appeler le 112</a>}
+                        />                      </div>
                     </div>
                   )}
 
