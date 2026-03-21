@@ -87,14 +87,14 @@ export async function POST(request: NextRequest) {
 
     // Atomic check and insert
     const { data: booking, error: dbError } = await supabase.rpc("create_booking_atomic", {
-      p_patient_name: parsed.data.patient_name,
-      p_patient_email: parsed.data.patient_email,
-      p_patient_phone: parsed.data.patient_phone,
-      p_care_type: parsed.data.care_type,
-      p_date: parsed.data.date,
-      p_time_slot_start: parsed.data.time_slot_start,
-      p_time_slot_end: parsed.data.time_slot_end,
-      p_patient_notes: parsed.data.patient_notes || null,
+      p_patient_name: String(parsed.data.patient_name),
+      p_patient_email: String(parsed.data.patient_email),
+      p_patient_phone: String(parsed.data.patient_phone),
+      p_care_type: String(parsed.data.care_type),
+      p_date: String(parsed.data.date),
+      p_time_slot_start: String(parsed.data.time_slot_start),
+      p_time_slot_end: String(parsed.data.time_slot_end),
+      p_patient_notes: parsed.data.patient_notes ? String(parsed.data.patient_notes) : null,
     });
 
     if (dbError) {
