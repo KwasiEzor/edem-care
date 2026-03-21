@@ -1,4 +1,5 @@
 import { getSettings } from "@/lib/settings";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 import { AdminHeader } from "@/components/admin/admin-header";
@@ -33,10 +34,10 @@ export default async function SettingsPage() {
 
   const whatsappStatus = {
     connected: !!(
-      process.env.WHATSAPP_ACCESS_TOKEN &&
-      process.env.WHATSAPP_PHONE_NUMBER_ID
+      env.WHATSAPP_ACCESS_TOKEN &&
+      env.WHATSAPP_PHONE_NUMBER_ID
     ),
-    webhookUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhooks/whatsapp`,
+    webhookUrl: `${env.NEXT_PUBLIC_SITE_URL}/api/webhooks/whatsapp`,
   };
 
   return (
