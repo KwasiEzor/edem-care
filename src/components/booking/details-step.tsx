@@ -245,12 +245,6 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
               ? "Envoi en cours..."
               : "Confirmer la demande de rendez-vous"}
           </Button>
-          
-          {turnstileEnabled && !turnstileToken && (
-            <p className="text-[10px] text-center text-muted-custom mt-2">
-              Validation anti-robot en cours... le bouton s&apos;activera automatiquement.
-            </p>
-          )}
         </form>
       </CardContent>
     </Card>

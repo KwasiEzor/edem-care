@@ -270,12 +270,6 @@ export function Contact() {
                   )}
                   {isPending ? "Envoi en cours..." : "Envoyer le message"}
                 </Button>
-                
-                {turnstileEnabled && !turnstileToken && (
-                  <p className="text-[10px] text-center text-muted-custom mt-2">
-                    Validation anti-robot en cours... le bouton s&apos;activera automatiquement.
-                  </p>
-                )}
               </form>
             </CardContent>
           </Card>
