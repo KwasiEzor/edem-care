@@ -5,9 +5,11 @@ import { env } from "@/lib/env";
 
 interface TurnstileWidgetProps extends Omit<TurnstileProps, "siteKey"> {
   onSuccess?: (token: string) => void;
+  onExpire?: () => void;
+  onError?: (error: string | Error) => void;
 }
 
-export function TurnstileWidget({ onSuccess, ...props }: TurnstileWidgetProps) {
+export function TurnstileWidget({ onSuccess, onExpire, onError, ...props }: TurnstileWidgetProps) {
   const siteKey = env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   if (!siteKey) {
@@ -24,6 +26,8 @@ export function TurnstileWidget({ onSuccess, ...props }: TurnstileWidgetProps) {
       <Turnstile
         siteKey={siteKey}
         onSuccess={onSuccess}
+        onExpire={onExpire}
+        onError={onError}
         options={{
           theme: "light",
           size: "normal",

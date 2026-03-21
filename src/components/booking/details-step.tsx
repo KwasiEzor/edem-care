@@ -49,6 +49,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
       date: data.date,
       time_slot_start: data.time_slot_start,
       time_slot_end: data.time_slot_end,
+      care_type: data.care_type as any,
     },
   });
 
@@ -88,6 +89,15 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
     }
   };
 
+  const handleValidationError = () => {
+    const errorFields = Object.keys(errors);
+    if (errorFields.length > 0) {
+      toast.error("Veuillez vérifier les champs du formulaire", {
+        description: `Champs manquants ou invalides : ${errorFields.join(", ")}`,
+      });
+    }
+  };
+
   return (
     <Card className="rounded-[2rem] border border-slate-200 bg-white/92 shadow-[0_24px_60px_rgba(15,23,42,0.06)] backdrop-blur-sm">
       <CardContent className="p-6 lg:p-8">
@@ -115,7 +125,10 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
           de rendez-vous et à vous recontacter.
         </div>
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5">
+        <form 
+          onSubmit={handleSubmit(onFormSubmit, handleValidationError)} 
+          className="space-y-5"
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="space-y-2">
               <Label htmlFor="patient_name">Nom complet *</Label>
@@ -126,7 +139,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
                 {...register("patient_name")}
               />
               {errors.patient_name && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs text-destructive mt-1">
                   {errors.patient_name.message}
                 </p>
               )}
@@ -142,7 +155,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
                 {...register("patient_email")}
               />
               {errors.patient_email && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs text-destructive mt-1">
                   {errors.patient_email.message}
                 </p>
               )}
@@ -160,7 +173,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
                 {...register("patient_phone")}
               />
               {errors.patient_phone && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs text-destructive mt-1">
                   {errors.patient_phone.message}
                 </p>
               )}
@@ -169,7 +182,8 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
             <div className="space-y-2">
               <Label htmlFor="care_type">Type de soins *</Label>
               <Select
-                onValueChange={(value) => value && setValue("care_type", value as BookingFormData["care_type"])}
+                defaultValue={data.care_type}
+                onValueChange={(value) => value && setValue("care_type", value as any)}
               >
                 <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-slate-50/70 px-4">
                   <SelectValue placeholder="Sélectionnez" />
@@ -183,7 +197,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
                 </SelectContent>
               </Select>
               {errors.care_type && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs text-destructive mt-1">
                   {errors.care_type.message}
                 </p>
               )}
@@ -208,11 +222,18 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
               setTurnstileToken(token);
               setValue("turnstile_token", token);
             }}
+            onExpire={() => {
+              setTurnstileToken(null);
+              setValue("turnstile_token", "");
+            }}
+            onError={() => {
+              console.error("Turnstile error");
+            }}
           />
 
           <Button
             type="submit"
-            disabled={isSubmitting || (turnstileEnabled && !turnstileToken)}
+            disabled={isSubmitting}
             className="h-12 w-full rounded-full bg-forest text-base shadow-lg shadow-blue-900/10 hover:bg-forest/90"
           >
             {isSubmitting ? (
@@ -224,6 +245,12 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
               ? "Envoi en cours..."
               : "Confirmer la demande de rendez-vous"}
           </Button>
+          
+          {turnstileEnabled && !turnstileToken && (
+            <p className="text-[10px] text-center text-muted-custom mt-2">
+              Validation anti-robot en cours... le bouton s&apos;activera automatiquement.
+            </p>
+          )}
         </form>
       </CardContent>
     </Card>

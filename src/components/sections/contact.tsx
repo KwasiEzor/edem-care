@@ -74,6 +74,15 @@ export function Contact() {
     });
   };
 
+  const handleValidationError = () => {
+    const errorFields = Object.keys(errors);
+    if (errorFields.length > 0) {
+      toast.error("Veuillez vérifier les champs du formulaire", {
+        description: `Champs manquants ou invalides : ${errorFields.join(", ")}`,
+      });
+    }
+  };
+
   return (
     <section id="contact" className="relative overflow-hidden py-20 lg:py-28">
       <div className="absolute inset-x-0 top-0 h-64 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.12),transparent_30%),radial-gradient(circle_at_top_right,rgba(6,182,212,0.08),transparent_22%)]" />
@@ -104,194 +113,172 @@ export function Contact() {
               prochaines étapes avant la prise en charge.
             </p>
             <div className="mt-6 space-y-4">
-            {[
-              {
-                icon: Phone,
-                title: "Téléphone",
-                value: "+32 (0) 000 00 00 00",
-                href: "tel:+32000000000",
-              },
-              {
-                icon: Mail,
-                title: "Email",
-                value: "contact@edem-care.be",
-                href: "mailto:contact@edem-care.be",
-              },
-              {
-                icon: MapPin,
-                title: "Zone d'intervention",
-                value: "Bruxelles et environs",
-              },
-            ].map((info) => (
-              <div
-                key={info.title}
-                className="rounded-[1.4rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/12">
-                    <info.icon className="h-5 w-5 text-cyan-100" />
+              {[
+                {
+                  icon: Phone,
+                  title: "Téléphone",
+                  value: "+32 (0) 000 00 00 00",
+                  href: "tel:+32000000000",
+                },
+                {
+                  icon: Mail,
+                  title: "Email",
+                  value: "contact@edem-care.be",
+                  href: "mailto:contact@edem-care.be",
+                },
+                {
+                  icon: MapPin,
+                  title: "Zone d'intervention",
+                  value: "Bruxelles et environs",
+                  href: "#",
+                },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/12">
+                    <item.icon className="h-5 w-5 text-cyan-200" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">
-                      {info.title}
+                    <p className="text-xs font-semibold uppercase tracking-wider text-blue-100/60">
+                      {item.title}
                     </p>
-                    {info.href ? (
-                      <a
-                        href={info.href}
-                        className="text-sm text-blue-100/80 transition-colors hover:text-white"
-                      >
-                        {info.value}
-                      </a>
-                    ) : (
-                      <p className="text-sm text-blue-100/80">{info.value}</p>
-                    )}
+                    <a
+                      href={item.href}
+                      className="text-sm font-medium hover:text-cyan-200 transition-colors"
+                    >
+                      {item.value}
+                    </a>
                   </div>
                 </div>
-              </div>
-            ))}
-            </div>
-            <div className="mt-6 rounded-[1.4rem] border border-white/12 bg-white/10 p-4">
-              <p className="text-sm font-semibold text-white">Ce que vous pouvez nous envoyer</p>
-              <p className="mt-2 text-sm leading-6 text-blue-100/78">
-                Vos coordonnées, le type de soins souhaités, votre disponibilité
-                et toute information utile pour préparer la prise en charge.
-              </p>
+              ))}
             </div>
           </div>
 
-          <div className="animate-fade-in-up [animation-delay:100ms]">
-            <Card className="rounded-[2rem] border border-slate-200 bg-white/92 shadow-[0_24px_60px_rgba(15,23,42,0.07)] backdrop-blur-sm">
-              <CardContent className="p-6 lg:p-8">
-                <div className="mb-8">
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-700">
-                    Formulaire
-                  </p>
-                  <h3 className="mt-2 font-heading text-3xl font-bold text-ink">
-                    Envoyez votre demande
-                  </h3>
-                </div>
-                <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  className="space-y-5"
-                >
-                  {/* Honeypot field - hidden from users */}
-                  <div className="absolute opacity-0 pointer-events-none" aria-hidden="true">
-                    <Input
-                      {...register("honeypot")}
-                      tabIndex={-1}
-                      autoComplete="off"
-                    />
-                  </div>
+          <Card className="animate-fade-in-right rounded-[2rem] border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
+            <CardContent className="p-6 sm:p-8">
+              <form 
+                onSubmit={handleSubmit(onSubmit, handleValidationError)} 
+                className="space-y-5"
+              >
+                {/* Honeypot field for spam protection */}
+                <input type="text" {...register("honeypot")} className="hidden" tabIndex={-1} autoComplete="off" />
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Nom complet *</Label>
-                      <Input
-                        id="name"
-                        placeholder="Votre nom"
-                        className="h-12 rounded-2xl border-slate-200 bg-slate-50/70 px-4"
-                        {...register("name")}
-                      />
-                      {errors.name && (
-                        <p className="text-sm text-destructive">
-                          {errors.name.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="votre@email.com"
-                        className="h-12 rounded-2xl border-slate-200 bg-slate-50/70 px-4"
-                        {...register("email")}
-                      />
-                      {errors.email && (
-                        <p className="text-sm text-destructive">
-                          {errors.email.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+32 ..."
-                        className="h-12 rounded-2xl border-slate-200 bg-slate-50/70 px-4"
-                        {...register("phone")}
-                      />
-                      {errors.phone && (
-                        <p className="text-sm text-destructive">
-                          {errors.phone.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="care_type">Type de soins</Label>
-                      <Select
-                        onValueChange={(value) => value && setValue("care_type", value as ContactFormData["care_type"])}
-                      >
-                        <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-slate-50/70 px-4">
-                          <SelectValue placeholder="Sélectionnez" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(CARE_TYPE_LABELS).map(
-                            ([value, label]) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            )
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message *</Label>
-                    <Textarea
-                      id="message"
-                      placeholder="Décrivez votre demande..."
-                      rows={5}
-                      className="min-h-36 rounded-[1.4rem] border-slate-200 bg-slate-50/70 px-4 py-3"
-                      {...register("message")}
+                    <Label htmlFor="name">Nom complet *</Label>
+                    <Input
+                      id="name"
+                      placeholder="Votre nom"
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50/70 px-4"
+                      {...register("name")}
                     />
-                    {errors.message && (
+                    {errors.name && (
                       <p className="text-sm text-destructive">
-                        {errors.message.message}
+                        {errors.name.message}
                       </p>
                     )}
                   </div>
-
-                  <TurnstileWidget
-                   onSuccess={(token) => {
-                     setTurnstileToken(token);
-                     setValue("turnstile_token", token);
-                   }}
-                  />
-
-                  <Button
-                   type="submit"
-                   disabled={isPending || (turnstileEnabled && !turnstileToken)}
-                   className="h-12 w-full rounded-full bg-forest text-base shadow-lg shadow-blue-900/10 hover:bg-forest/90"
-                  >                    {isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="votre@email.com"
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50/70 px-4"
+                      {...register("email")}
+                    />
+                    {errors.email && (
+                      <p className="text-sm text-destructive">
+                        {errors.email.message}
+                      </p>
                     )}
-                    {isPending ? "Envoi en cours..." : "Envoyer le message"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Téléphone (optionnel)</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+32 ..."
+                      className="h-12 rounded-2xl border-slate-200 bg-slate-50/70 px-4"
+                      {...register("phone")}
+                    />
+                    {errors.phone && (
+                      <p className="text-sm text-destructive">
+                        {errors.phone.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="care_type">Type de soins (optionnel)</Label>
+                    <Select
+                      onValueChange={(value) => setValue("care_type", value as any)}
+                    >
+                      <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-slate-50/70 px-4">
+                        <SelectValue placeholder="Sélectionnez" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(CARE_TYPE_LABELS).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message *</Label>
+                  <Textarea
+                    id="message"
+                    placeholder="Comment pouvons-nous vous aider ?"
+                    className="min-h-36 rounded-[1.4rem] border-slate-200 bg-slate-50/70 px-4 py-3"
+                    {...register("message")}
+                  />
+                  {errors.message && (
+                    <p className="text-sm text-destructive">
+                      {errors.message.message}
+                    </p>
+                  )}
+                </div>
+
+                <TurnstileWidget
+                  onSuccess={(token) => {
+                    setTurnstileToken(token);
+                    setValue("turnstile_token", token);
+                  }}
+                  onExpire={() => {
+                    setTurnstileToken(null);
+                    setValue("turnstile_token", "");
+                  }}
+                  onError={() => {
+                    console.error("Turnstile error");
+                  }}
+                />
+
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="h-12 w-full rounded-full bg-forest text-base shadow-lg shadow-blue-900/10 hover:bg-forest/90"
+                >
+                  {isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  {isPending ? "Envoi en cours..." : "Envoyer le message"}
+                </Button>
+                
+                {turnstileEnabled && !turnstileToken && (
+                  <p className="text-[10px] text-center text-muted-custom mt-2">
+                    Validation anti-robot en cours... le bouton s&apos;activera automatiquement.
+                  </p>
+                )}
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>
