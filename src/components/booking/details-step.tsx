@@ -18,7 +18,7 @@ import {
 import { ArrowLeft, Loader2, Send } from "lucide-react";
 import { CARE_TYPE_LABELS } from "@/types/database";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { BookingData } from "./booking-wizard";
 import { TurnstileWidget } from "@/components/ui/turnstile-widget";
 import { env } from "@/lib/env";
@@ -32,8 +32,11 @@ interface DetailsStepProps {
 export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileEnabled, setTurnstileEnabled] = useState(false);
 
-  const turnstileEnabled = !!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  useEffect(() => {
+    setTurnstileEnabled(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  }, []);
 
   const {
     register,

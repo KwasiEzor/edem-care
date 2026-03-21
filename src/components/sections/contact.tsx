@@ -20,15 +20,18 @@ import { Phone, Mail, MapPin, Send, Loader2 } from "lucide-react";
 
 import { toast } from "sonner";
 import { CARE_TYPE_LABELS } from "@/types/database";
-import { useTransition, useState } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { TurnstileWidget } from "@/components/ui/turnstile-widget";
 import { env } from "@/lib/env";
 
 export function Contact() {
   const [isPending, startTransition] = useTransition();
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileEnabled, setTurnstileEnabled] = useState(false);
 
-  const turnstileEnabled = !!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  useEffect(() => {
+    setTurnstileEnabled(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  }, []);
 
   const {
     register,
