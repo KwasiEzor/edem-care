@@ -11,7 +11,10 @@ CREATE OR REPLACE FUNCTION create_booking_atomic(
   p_time_slot_start TIME,
   p_time_slot_end TIME,
   p_patient_notes TEXT DEFAULT NULL
-) RETURNS bookings AS $$
+) RETURNS bookings 
+LANGUAGE plpgsql
+SECURITY DEFINER -- Ensures it runs with owner permissions to access all tables
+AS $$
 DECLARE
   v_booking bookings;
   v_available BOOLEAN;
@@ -45,14 +48,14 @@ BEGIN
     v_name_parts := string_to_array(trim(p_patient_name), ' ');
     IF array_length(v_name_parts, 1) > 1 THEN
       v_first_name := v_name_parts[1];
-      v_last_name := array_to_string(v_name_parts[2:], ' ');
+      v_last_name := array_to_string(v_name_parts[2:2147483647], ' ');
     ELSE
       v_first_name := '';
       v_last_name := p_patient_name;
     END IF;
 
     INSERT INTO patients (first_name, last_name, email, phone)
-    VALUES (v_first_name, v_last_name, p_patient_email, p_patient_phone)
+    VALUES (COALESCE(v_first_name, ''), COALESCE(v_last_name, p_patient_name), p_patient_email, p_patient_phone)
     RETURNING id INTO v_patient_id;
   END IF;
 
@@ -83,4 +86,4 @@ BEGIN
 
   RETURN v_booking;
 END;
-$$ LANGUAGE plpgsql;
+$$;

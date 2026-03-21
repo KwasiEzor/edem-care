@@ -94,7 +94,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
 
       if (!res.ok) {
         toast.error(result.error || "Erreur lors de la réservation", {
-          description: result.details ? JSON.stringify(result.details) : undefined,
+          description: result.message || (result.details ? JSON.stringify(result.details) : undefined),
         });
         setIsSubmitting(false);
         return;

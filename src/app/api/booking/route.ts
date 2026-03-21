@@ -108,7 +108,11 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-        { error: "Erreur lors de la création du rendez-vous" },
+        { 
+          error: "Erreur lors de la création du rendez-vous",
+          message: dbError.message,
+          code: dbError.code
+        },
         { status: 500 }
       );
     }
