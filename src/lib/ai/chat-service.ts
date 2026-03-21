@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getSettings } from "@/lib/settings";
+import { env } from "@/lib/env";
 
 const SYSTEM_PROMPT = `Tu es l'assistant virtuel d'Edem-Care, un service de soins infirmiers à domicile à Bruxelles. Tu t'appelles "Assistant Edem-Care".
 
@@ -45,7 +46,7 @@ export async function generateAIResponse(
   const settings = await getSettings();
 
   const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
+    apiKey: env.ANTHROPIC_API_KEY,
   });
 
   const response = await anthropic.messages.create({

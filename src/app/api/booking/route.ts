@@ -68,42 +68,28 @@ export async function POST(request: NextRequest) {
 
     const supabase = createAdminClient();
 
-    // Check slot is still available
-    const { data: slots } = await supabase.rpc("get_available_slots", {
-      target_date: parsed.data.date,
+    // Atomic check and insert
+    const { data: booking, error: dbError } = await supabase.rpc("create_booking_atomic", {
+      p_patient_name: parsed.data.patient_name,
+      p_patient_email: parsed.data.patient_email,
+      p_patient_phone: parsed.data.patient_phone,
+      p_care_type: parsed.data.care_type,
+      p_date: parsed.data.date,
+      p_time_slot_start: parsed.data.time_slot_start,
+      p_time_slot_end: parsed.data.time_slot_end,
+      p_patient_notes: parsed.data.patient_notes || null,
     });
-
-    const isAvailable = slots?.some(
-      (slot: { start_time: string }) =>
-        slot.start_time === parsed.data.time_slot_start
-    );
-
-    if (!isAvailable) {
-      return NextResponse.json(
-        { error: "Ce créneau n'est plus disponible" },
-        { status: 409 }
-      );
-    }
-
-    // Insert booking
-    const { data: booking, error: dbError } = await supabase
-      .from("bookings")
-      .insert({
-        patient_name: parsed.data.patient_name,
-        patient_email: parsed.data.patient_email,
-        patient_phone: parsed.data.patient_phone,
-        care_type: parsed.data.care_type,
-        date: parsed.data.date,
-        time_slot_start: parsed.data.time_slot_start,
-        time_slot_end: parsed.data.time_slot_end,
-        patient_notes: parsed.data.patient_notes || null,
-        status: "pending",
-      })
-      .select()
-      .single();
 
     if (dbError) {
       console.error("DB error:", dbError);
+      
+      if (dbError.code === 'P0001') {
+        return NextResponse.json(
+          { error: "Ce créneau n'est plus disponible" },
+          { status: 409 }
+        );
+      }
+
       return NextResponse.json(
         { error: "Erreur lors de la création du rendez-vous" },
         { status: 500 }

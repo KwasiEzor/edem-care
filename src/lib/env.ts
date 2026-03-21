@@ -1,0 +1,38 @@
+import { z } from "zod";
+
+const envSchema = z.object({
+  // Supabase
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+
+  // AI
+  ANTHROPIC_API_KEY: z.string().min(1),
+
+  // WhatsApp
+  WHATSAPP_ACCESS_TOKEN: z.string().min(1).optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().min(1).optional(),
+  WHATSAPP_VERIFY_TOKEN: z.string().min(1).optional(),
+  WHATSAPP_APP_SECRET: z.string().min(1).optional(),
+
+  // Email
+  RESEND_API_KEY: z.string().min(1).optional(),
+  ADMIN_EMAIL: z.string().email().optional(),
+
+  // Site
+  NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
+});
+
+export const env = envSchema.parse({
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+  WHATSAPP_ACCESS_TOKEN: process.env.WHATSAPP_ACCESS_TOKEN,
+  WHATSAPP_PHONE_NUMBER_ID: process.env.WHATSAPP_PHONE_NUMBER_ID,
+  WHATSAPP_VERIFY_TOKEN: process.env.WHATSAPP_VERIFY_TOKEN,
+  WHATSAPP_APP_SECRET: process.env.WHATSAPP_APP_SECRET,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+});

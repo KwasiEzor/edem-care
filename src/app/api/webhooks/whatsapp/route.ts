@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { after } from "next/server";
+import { env } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateAIResponse } from "@/lib/ai/chat-service";
 import { getSettings, type AdminSettings } from "@/lib/settings";
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
 
   if (
     mode === "subscribe" &&
-    token === process.env.WHATSAPP_VERIFY_TOKEN &&
+    token === env.WHATSAPP_VERIFY_TOKEN &&
     challenge
   ) {
     return new NextResponse(challenge, { status: 200 });
