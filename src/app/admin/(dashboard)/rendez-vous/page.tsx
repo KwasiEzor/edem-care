@@ -1,18 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { BookingTable } from "@/components/admin/booking-table";
-
-async function getBookings() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("bookings")
-    .select("*, patients(address)")
-    .order("date", { ascending: false });
-  return (data || []).map(b => ({
-    ...b,
-    patient_address: (b.patients as any)?.address || null
-  }));
-}
+import { getBookings } from "@/lib/dal/bookings";
 
 export default async function BookingsPage() {
   const bookings = await getBookings();

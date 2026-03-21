@@ -1,18 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { PatientsManager } from "@/components/admin/patients-manager";
-
-async function getPatients() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("patients")
-    .select("*")
-    .order("last_name", { ascending: true });
-  return data || [];
-}
+import { getAllPatients } from "@/lib/dal/patients";
 
 export default async function PatientsPage() {
-  const patients = await getPatients();
+  const patients = await getAllPatients();
 
   return (
     <>
