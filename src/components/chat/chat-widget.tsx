@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, ArrowRight } from "lucide-react";
+import { MessageCircle, X, Send, ArrowRight, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { CARE_TYPE_LABELS, type CareType } from "@/types/database";
@@ -12,6 +12,7 @@ interface Message {
   content: string;
   booking_intent?: boolean;
   suggested_care_type?: string | null;
+  is_emergency?: boolean;
 }
 
 const WELCOME_MESSAGE: Message = {
@@ -73,6 +74,7 @@ export function ChatWidget() {
         content: data.message,
         booking_intent: data.metadata?.booking_intent,
         suggested_care_type: data.metadata?.suggested_care_type,
+        is_emergency: data.metadata?.is_emergency,
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch {
@@ -154,8 +156,30 @@ export function ChatWidget() {
                     </div>
                   </div>
 
+                  {/* Emergency intent card */}
+                  {msg.is_emergency && (
+                    <div className="mt-2 ml-0">
+                      <div className="inline-block rounded-xl border border-red-200 bg-red-50 p-3">
+                        <p className="text-xs font-semibold text-red-700 flex items-center gap-1.5 mb-2">
+                          <AlertTriangle className="h-4 w-4" />
+                          Urgence médicale détectée
+                        </p>
+                        <p className="text-xs text-red-600 mb-3 max-w-[250px]">
+                          Vos symptômes nécessitent une attention médicale immédiate. N'attendez pas.
+                        </p>
+                        <Button
+                          size="sm"
+                          className="h-9 w-full rounded-full bg-red-600 text-white hover:bg-red-700 flex items-center justify-center font-bold"
+                          asChild
+                        >
+                          <a href="tel:112">Appeler le 112</a>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Booking intent card */}
-                  {msg.booking_intent && msg.suggested_care_type && (
+                  {msg.booking_intent && msg.suggested_care_type && !msg.is_emergency && (
                     <div className="mt-2 ml-0">
                       <div className="inline-block rounded-xl border border-forest/20 bg-forest/5 p-3">
                         <p className="text-xs font-semibold text-forest">

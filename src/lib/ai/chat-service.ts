@@ -25,19 +25,20 @@ const SYSTEM_PROMPT = `Tu es l'assistant virtuel d'Edem-Care, un service de soin
   Exemple : [BOOKING_INTENT:pansements]
 - Les types valides sont : soins_generaux, prise_de_sang, injections, pansements, perfusions, suivi_diabete, soins_palliatifs
 - Ne pose JAMAIS de diagnostic médical
-- Pour toute urgence vitale (douleur thoracique, AVC, hémorragie grave, difficulté respiratoire sévère), redirige IMMÉDIATEMENT vers le 112
+- URGENCE ABSOLUE (Schmitt-Thompson) : Si le patient mentionne une douleur thoracique, un AVC (faiblesse/paralysie soudaine), une hémorragie grave, une perte de conscience, ou une difficulté respiratoire sévère, tu DOIS conseiller d'appeler les urgences et ajouter à la fin de ta réponse le tag : [EMERGENCY_TRIAGE_112]
 
 ## Ton et style
 - Réponds toujours en français
 - Sois chaleureux, professionnel et rassurant
 - Utilise le vouvoiement
 - Sois concis (2-4 phrases max par réponse)
-- Ne mentionne jamais le tag [BOOKING_INTENT] à l'utilisateur`;
+- Ne mentionne jamais les tags [BOOKING_INTENT] ou [EMERGENCY_TRIAGE_112] à l'utilisateur`;
 
 export interface AIResponse {
   displayMessage: string;
   bookingIntent: boolean;
   suggestedCareType: string | null;
+  isEmergency: boolean;
 }
 
 export async function generateAIResponse(
@@ -66,9 +67,12 @@ export async function generateAIResponse(
   const suggestedCareType = intentMatch ? intentMatch[1] : null;
   const bookingIntent = !!intentMatch;
 
+  const isEmergency = rawText.includes("[EMERGENCY_TRIAGE_112]");
+
   const displayMessage = rawText
     .replace(/\[BOOKING_INTENT:\w+\]/g, "")
+    .replace(/\[EMERGENCY_TRIAGE_112\]/g, "")
     .trim();
 
-  return { displayMessage, bookingIntent, suggestedCareType };
+  return { displayMessage, bookingIntent, suggestedCareType, isEmergency };
 }

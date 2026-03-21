@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { displayMessage, bookingIntent, suggestedCareType } =
+    const { displayMessage, bookingIntent, suggestedCareType, isEmergency } =
       await generateAIResponse(messages);
 
     // Upsert conversation to chat_transcripts
@@ -103,6 +103,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         booking_intent: bookingIntent,
         suggested_care_type: suggestedCareType,
+        is_emergency: isEmergency,
       },
     });
   } catch (error) {
