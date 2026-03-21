@@ -31,7 +31,7 @@ export const contactFormSchema = z.object({
     .string()
     .min(10, "Le message doit contenir au moins 10 caractères")
     .max(2000, "Le message est trop long"),
-  honeypot: z.string().max(0, "Spam détecté"),
+  honeypot: z.string().max(0, "Spam détecté").optional(),
   turnstile_token: z.string().optional(),
   math_answer: z.string().optional(),
 });

@@ -75,6 +75,9 @@ export function Contact() {
           toast.error("Erreur lors de l'envoi", {
             description: result.error || "Veuillez réessayer plus tard.",
           });
+          if (result.details) {
+            console.error("Contact validation details:", result.details);
+          }
         }
       } catch {
         toast.error("Erreur lors de l'envoi", {

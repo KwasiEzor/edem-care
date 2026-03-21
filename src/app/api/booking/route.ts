@@ -13,8 +13,9 @@ export async function POST(request: NextRequest) {
 
     const parsed = bookingFormSchema.safeParse(body);
     if (!parsed.success) {
+      console.error("Booking validation error:", parsed.error.format());
       return NextResponse.json(
-        { error: "Données invalides" },
+        { error: "Données invalides", details: parsed.error.format() },
         { status: 400 }
       );
     }

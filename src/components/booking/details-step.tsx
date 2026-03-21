@@ -64,6 +64,14 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
     },
   });
 
+  // Ensure values from previous steps are correctly set in the form state
+  useEffect(() => {
+    if (data.date) setValue("date", data.date);
+    if (data.time_slot_start) setValue("time_slot_start", data.time_slot_start);
+    if (data.time_slot_end) setValue("time_slot_end", data.time_slot_end);
+    if (data.care_type) setValue("care_type", data.care_type as any);
+  }, [data, setValue]);
+
   const onFormSubmit = async (formData: BookingFormData) => {
     // If Turnstile is enabled, it's the primary, but we allow submission if math is filled
     if (turnstileEnabled && !turnstileToken && !formData.math_answer) {
@@ -76,13 +84,18 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
       const res = await fetch("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, turnstile_token: turnstileToken }),
+        body: JSON.stringify({ 
+          ...formData, 
+          turnstile_token: turnstileToken || formData.turnstile_token 
+        }),
       });
 
       const result = await res.json();
 
       if (!res.ok) {
-        toast.error(result.error || "Erreur lors de la réservation");
+        toast.error(result.error || "Erreur lors de la réservation", {
+          description: result.details ? JSON.stringify(result.details) : undefined,
+        });
         setIsSubmitting(false);
         return;
       }
@@ -198,7 +211,11 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
               <Label htmlFor="care_type">Type de soins *</Label>
               <Select
                 defaultValue={data.care_type}
-                onValueChange={(value) => value && setValue("care_type", value as any)}
+                onValueChange={(value) => {
+                  if (value) {
+                    setValue("care_type", value as any, { shouldValidate: true });
+                  }
+                }}
               >
                 <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-slate-50/70 px-4">
                   <SelectValue placeholder="Sélectionnez" />

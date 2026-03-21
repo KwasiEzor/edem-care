@@ -36,7 +36,8 @@ export async function submitContact(data: ContactFormData) {
       honeypot: data.honeypot ?? "",
     });
     if (!parsed.success) {
-      return { success: false, error: "Données invalides" };
+      console.error("Contact validation error:", parsed.error.format());
+      return { success: false, error: "Données invalides", details: parsed.error.format() };
     }
 
     const supabase = createAdminClient();
