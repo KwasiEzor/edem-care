@@ -49,7 +49,7 @@ export async function generateAIResponse(
   });
 
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-5-20250929",
+    model: settings.chatbot_model || "claude-3-5-sonnet-latest",
     max_tokens: 512,
     system: settings.chatbot_system_prompt ?? SYSTEM_PROMPT,
     messages: messages.map((m) => ({

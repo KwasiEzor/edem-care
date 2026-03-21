@@ -12,6 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Building2,
   CalendarDays,
   Bot,
@@ -256,6 +263,31 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
                 checked={settings.chatbot_enabled}
                 onCheckedChange={(v) => update("chatbot_enabled", v)}
               />
+              <FieldRow
+                label="Modèle d'IA"
+                htmlFor="chatbot_model"
+                description="Le modèle utilisé pour générer les réponses"
+              >
+                <Select
+                  value={settings.chatbot_model}
+                  onValueChange={(v) => update("chatbot_model", v)}
+                >
+                  <SelectTrigger id="chatbot_model" className="w-full">
+                    <SelectValue placeholder="Sélectionner un modèle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="claude-3-5-sonnet-latest">
+                      Claude 3.5 Sonnet (Recommandé)
+                    </SelectItem>
+                    <SelectItem value="claude-3-opus-latest">
+                      Claude 3 Opus (Plus puissant)
+                    </SelectItem>
+                    <SelectItem value="claude-3-haiku-20240307">
+                      Claude 3 Haiku (Plus rapide)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </FieldRow>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div>
@@ -297,6 +329,7 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
               onClick={() =>
                 handleSave("chatbot", {
                   chatbot_enabled: settings.chatbot_enabled,
+                  chatbot_model: settings.chatbot_model,
                   chatbot_system_prompt: settings.chatbot_system_prompt,
                 })
               }

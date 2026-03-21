@@ -15,6 +15,7 @@ const settingsUpdateSchema = z.object({
   booking_allow_sundays: z.boolean().optional(),
 
   chatbot_enabled: z.boolean().optional(),
+  chatbot_model: z.string().min(1).max(100).optional(),
   chatbot_system_prompt: z.string().max(5000).nullable().optional(),
 
   whatsapp_ai_auto_reply: z.boolean().optional(),

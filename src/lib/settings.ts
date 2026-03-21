@@ -50,6 +50,7 @@ export interface AdminSettings {
 
   // Chatbot IA
   chatbot_enabled: boolean;
+  chatbot_model: string;
   chatbot_system_prompt: string | null;
 
   // WhatsApp
@@ -87,6 +88,7 @@ export const DEFAULT_SETTINGS: AdminSettings = {
   booking_allow_sundays: false,
 
   chatbot_enabled: true,
+  chatbot_model: "claude-3-5-sonnet-latest",
   chatbot_system_prompt: null,
 
   whatsapp_ai_auto_reply: true,
