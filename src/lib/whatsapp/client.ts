@@ -1,8 +1,10 @@
+import { env } from "@/lib/env";
+
 const GRAPH_API_VERSION = "v21.0";
 
 function getConfig() {
-  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const accessToken = env.WHATSAPP_ACCESS_TOKEN;
+  const phoneNumberId = env.WHATSAPP_PHONE_NUMBER_ID;
   if (!accessToken || !phoneNumberId) {
     throw new Error("WhatsApp environment variables not configured");
   }

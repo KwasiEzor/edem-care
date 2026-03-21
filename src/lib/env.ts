@@ -1,13 +1,16 @@
 import { z } from "zod";
 
+const isServer = typeof window === "undefined";
+const isBuild = process.env.NEXT_PHASE === "phase-production-build";
+
 const envSchema = z.object({
   // Supabase
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  SUPABASE_SERVICE_ROLE_KEY: (isServer && !isBuild) ? z.string().min(1) : z.string().optional(),
 
   // AI
-  ANTHROPIC_API_KEY: z.string().min(1),
+  ANTHROPIC_API_KEY: (isServer && !isBuild) ? z.string().min(1) : z.string().optional(),
 
   // WhatsApp
   WHATSAPP_ACCESS_TOKEN: z.string().min(1).optional(),
@@ -21,7 +24,7 @@ const envSchema = z.object({
 
   // Bot Protection
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
-  TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+  TURNSTILE_SECRET_KEY: (isServer && !isBuild) ? z.string().min(1) : z.string().optional(),
 
   // Site
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),

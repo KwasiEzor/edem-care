@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
   if (
     mode === "subscribe" &&
-    token === env.WHATSAPP_VERIFY_TOKEN &&
+    token === env.WHATSAPP_VERIFY_TOKEN! &&
     challenge
   ) {
     return new NextResponse(challenge, { status: 200 });

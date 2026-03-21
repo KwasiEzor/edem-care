@@ -1,11 +1,12 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { z } from "zod";
+import { env } from "@/lib/env";
 
 export function validateWebhookSignature(
   rawBody: string,
   signatureHeader: string | null
 ): boolean {
-  const appSecret = process.env.WHATSAPP_APP_SECRET;
+  const appSecret = env.WHATSAPP_APP_SECRET;
   if (!appSecret || !signatureHeader) return false;
 
   const expectedSignature = createHmac("sha256", appSecret)

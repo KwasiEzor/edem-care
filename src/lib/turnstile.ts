@@ -21,7 +21,7 @@ export async function validateTurnstileToken(token?: string) {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: `secret=${encodeURIComponent(env.TURNSTILE_SECRET_KEY)}&response=${encodeURIComponent(token)}`,
+      body: `secret=${encodeURIComponent(env.TURNSTILE_SECRET_KEY!)}&response=${encodeURIComponent(token)}`,
     }
   );
 

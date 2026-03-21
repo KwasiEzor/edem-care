@@ -46,7 +46,7 @@ export async function generateAIResponse(
   const settings = await getSettings();
 
   const anthropic = new Anthropic({
-    apiKey: env.ANTHROPIC_API_KEY,
+    apiKey: env.ANTHROPIC_API_KEY!,
   });
 
   const response = await anthropic.messages.create({
