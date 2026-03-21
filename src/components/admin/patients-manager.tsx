@@ -26,7 +26,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Plus, Pencil, Trash2, Users, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Loader2, Phone, MapPin, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -206,54 +206,142 @@ export function PatientsManager({ initialPatients }: PatientsManagerProps) {
             />
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead>Adresse</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paged.map((patient) => (
-                    <TableRow key={patient.id}>
-                      <TableCell className="font-medium">
-                        {patient.last_name} {patient.first_name}
-                      </TableCell>
-                      <TableCell className="text-muted-custom">
-                        {patient.email || "-"}
-                      </TableCell>
-                      <TableCell className="text-muted-custom">
-                        {patient.phone || "-"}
-                      </TableCell>
-                      <TableCell className="text-muted-custom truncate max-w-48">
-                        {patient.address || "-"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openEdit(patient)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => setDeleteConfirm(patient.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              {/* Desktop View */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nom</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Téléphone</TableHead>
+                      <TableHead>Adresse</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {paged.map((patient) => (
+                      <TableRow key={patient.id}>
+                        <TableCell className="font-medium">
+                          {patient.last_name} {patient.first_name}
+                        </TableCell>
+                        <TableCell className="text-muted-custom">
+                          {patient.email || "-"}
+                        </TableCell>
+                        <TableCell className="text-muted-custom">
+                          {patient.phone || "-"}
+                        </TableCell>
+                        <TableCell className="text-muted-custom truncate max-w-48">
+                          {patient.address || "-"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEdit(patient)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => setDeleteConfirm(patient.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile View */}
+              <div className="md:hidden divide-y divide-border">
+                {paged.map((patient) => (
+                  <div key={patient.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-semibold text-ink">
+                          {patient.last_name} {patient.first_name}
+                        </p>
+                        {patient.address && (
+                          <p className="text-xs text-muted-custom flex items-center gap-1 mt-0.5">
+                            <MapPin className="h-3 w-3" />
+                            {patient.address}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => openEdit(patient)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive"
+                          onClick={() => setDeleteConfirm(patient.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {patient.phone && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-9 gap-1.5 text-xs"
+                          asChild
+                        >
+                          <a href={`tel:${patient.phone}`}>
+                            <Phone className="h-3.5 w-3.5 text-forest" />
+                            Appeler
+                          </a>
+                        </Button>
+                      )}
+                      {patient.address && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-9 gap-1.5 text-xs"
+                          asChild
+                        >
+                          <a 
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(patient.address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <MapPin className="h-3.5 w-3.5 text-cyan-600" />
+                            GPS
+                          </a>
+                        </Button>
+                      )}
+                      {patient.email && (
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="h-9 w-9 shrink-0"
+                          asChild
+                        >
+                          <a href={`mailto:${patient.email}`}>
+                            <Mail className="h-4 w-4 text-slate-600" />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <DataTablePagination
                 currentPage={page}
                 totalItems={filtered.length}

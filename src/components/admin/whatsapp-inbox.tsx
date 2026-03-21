@@ -16,6 +16,7 @@ import {
   Phone,
   Zap,
   ChevronDown,
+  ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow, format } from "date-fns";
@@ -40,9 +41,16 @@ export function WhatsAppInbox({
   const [messageInput, setMessageInput] = useState("");
   const [sending, setSending] = useState(false);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
+  const [mobileView, setMobileView] = useState<"list" | "thread">("list");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
+
+  // Auto-switch to thread on mobile when a conversation is selected
+  const handleSelectConversation = (id: string) => {
+    setSelectedId(id);
+    setMobileView("thread");
+  };
 
   // Realtime subscription
   useEffect(() => {
@@ -163,9 +171,12 @@ export function WhatsAppInbox({
   };
 
   return (
-    <div className="flex gap-4 h-[calc(100vh-220px)] min-h-[500px]">
+    <div className="flex gap-4 h-[calc(100vh-220px)] min-h-[500px] relative overflow-hidden">
       {/* Left panel — conversation list */}
-      <Card className="w-[350px] flex flex-col shrink-0 overflow-hidden">
+      <Card className={cn(
+        "w-full md:w-[350px] flex flex-col shrink-0 overflow-hidden md:flex",
+        mobileView === "thread" ? "hidden md:flex" : "flex"
+      )}>
         <div className="p-3 border-b">
           <SearchInput
             value={search}
@@ -188,7 +199,7 @@ export function WhatsAppInbox({
             filtered.map((conv) => (
               <button
                 key={conv.id}
-                onClick={() => setSelectedId(conv.id)}
+                onClick={() => handleSelectConversation(conv.id)}
                 className={cn(
                   "w-full text-left px-4 py-3 border-b border-border/50 transition-colors hover:bg-muted/50",
                   selectedId === conv.id && "bg-forest/5"
@@ -235,26 +246,39 @@ export function WhatsAppInbox({
       </Card>
 
       {/* Right panel — chat thread */}
-      <Card className="flex-1 flex flex-col overflow-hidden">
+      <Card className={cn(
+        "flex-1 flex flex-col overflow-hidden md:flex",
+        mobileView === "list" ? "hidden md:flex" : "flex"
+      )}>
         {selected ? (
           <>
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b">
-              <div>
-                <h3 className="font-medium text-sm text-ink">
-                  {selected.contact_name ?? selected.phone_number}
-                </h3>
-                {selected.contact_name && (
-                  <p className="text-xs text-muted-custom">
-                    {selected.phone_number}
-                  </p>
-                )}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden h-8 w-8"
+                  onClick={() => setMobileView("list")}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div>
+                  <h3 className="font-medium text-sm text-ink">
+                    {selected.contact_name ?? selected.phone_number}
+                  </h3>
+                  {selected.contact_name && (
+                    <p className="text-xs text-muted-custom">
+                      {selected.phone_number}
+                    </p>
+                  )}
+                </div>
               </div>
               <Button
                 variant={selected.is_ai_active ? "outline" : "default"}
                 size="sm"
                 className={cn(
-                  "text-xs",
+                  "text-xs px-2 h-8",
                   !selected.is_ai_active &&
                     "bg-forest text-white hover:bg-forest/90"
                 )}
@@ -262,13 +286,15 @@ export function WhatsAppInbox({
               >
                 {selected.is_ai_active ? (
                   <>
-                    <UserRound className="h-3.5 w-3.5 mr-1" />
-                    Prendre en charge
+                    <UserRound className="h-3 w-3 mr-1" />
+                    <span className="hidden sm:inline">Prendre en charge</span>
+                    <span className="sm:hidden">Gérer</span>
                   </>
                 ) : (
                   <>
-                    <Bot className="h-3.5 w-3.5 mr-1" />
-                    Réactiver l&apos;IA
+                    <Bot className="h-3 w-3 mr-1" />
+                    <span className="hidden sm:inline">Réactiver l&apos;IA</span>
+                    <span className="sm:hidden">IA</span>
                   </>
                 )}
               </Button>

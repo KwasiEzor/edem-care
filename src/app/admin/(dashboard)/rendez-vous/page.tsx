@@ -6,9 +6,12 @@ async function getBookings() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("bookings")
-    .select("*")
+    .select("*, patients(address)")
     .order("date", { ascending: false });
-  return data || [];
+  return (data || []).map(b => ({
+    ...b,
+    patient_address: (b.patients as any)?.address || null
+  }));
 }
 
 export default async function BookingsPage() {

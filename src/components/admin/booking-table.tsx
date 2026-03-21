@@ -42,6 +42,10 @@ import {
   Loader2,
   Download,
   CalendarDays,
+  Phone,
+  MapPin,
+  ExternalLink,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -51,7 +55,7 @@ import { useRouter } from "next/navigation";
 const PAGE_SIZE = 10;
 
 interface BookingTableProps {
-  initialBookings: Booking[];
+  initialBookings: (Booking & { patient_address?: string | null })[];
 }
 
 export function BookingTable({ initialBookings }: BookingTableProps) {
@@ -200,117 +204,224 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
             />
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Créneau</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paged.map((booking) => (
-                    <TableRow key={booking.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-ink">
-                            {booking.patient_name}
-                          </p>
-                          <p className="text-xs text-muted-custom">
-                            {booking.patient_email}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(booking.date), "dd/MM/yyyy", {
-                          locale: fr,
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        {booking.time_slot_start.slice(0, 5)} -{" "}
-                        {booking.time_slot_end.slice(0, 5)}
-                      </TableCell>
-                      <TableCell>
-                        {CARE_TYPE_LABELS[booking.care_type as CareType] ||
-                          booking.care_type}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={booking.status} />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setSelectedBooking(booking);
-                              setAdminNotes(booking.admin_notes || "");
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {booking.status === "pending" && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-forest hover:text-forest"
-                                disabled={loading === booking.id}
-                                onClick={() =>
-                                  setConfirmAction({
-                                    id: booking.id,
-                                    status: "confirmed",
-                                    label: "Confirmer ce rendez-vous ?",
-                                    variant: "default",
-                                  })
-                                }
-                              >
-                                {loading === booking.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Check className="h-4 w-4" />
-                                )}
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-destructive hover:text-destructive"
-                                disabled={loading === booking.id}
-                                onClick={() =>
-                                  setConfirmAction({
-                                    id: booking.id,
-                                    status: "cancelled",
-                                    label: "Annuler ce rendez-vous ?",
-                                    variant: "destructive",
-                                  })
-                                }
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                          {booking.status === "confirmed" && (
+              {/* Desktop View */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Patient</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Créneau</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paged.map((booking) => (
+                      <TableRow key={booking.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-ink">
+                              {booking.patient_name}
+                            </p>
+                            <p className="text-xs text-muted-custom">
+                              {booking.patient_email}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(booking.date), "dd/MM/yyyy", {
+                            locale: fr,
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          {booking.time_slot_start.slice(0, 5)} -{" "}
+                          {booking.time_slot_end.slice(0, 5)}
+                        </TableCell>
+                        <TableCell>
+                          {CARE_TYPE_LABELS[booking.care_type as CareType] ||
+                            booking.care_type}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={booking.status} />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-secondary hover:text-secondary"
-                              disabled={loading === booking.id}
-                              onClick={() =>
-                                updateStatus(booking.id, "completed")
-                              }
+                              onClick={() => {
+                                setSelectedBooking(booking);
+                                setAdminNotes(booking.admin_notes || "");
+                              }}
                             >
-                              <CheckCircle2 className="h-4 w-4" />
+                              <Eye className="h-4 w-4" />
                             </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                            {booking.status === "pending" && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-forest hover:text-forest"
+                                  disabled={loading === booking.id}
+                                  onClick={() =>
+                                    setConfirmAction({
+                                      id: booking.id,
+                                      status: "confirmed",
+                                      label: "Confirmer ce rendez-vous ?",
+                                      variant: "default",
+                                    })
+                                  }
+                                >
+                                  {loading === booking.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Check className="h-4 w-4" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-destructive hover:text-destructive"
+                                  disabled={loading === booking.id}
+                                  onClick={() =>
+                                    setConfirmAction({
+                                      id: booking.id,
+                                      status: "cancelled",
+                                      label: "Annuler ce rendez-vous ?",
+                                      variant: "destructive",
+                                    })
+                                  }
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                            {booking.status === "confirmed" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-secondary hover:text-secondary"
+                                disabled={loading === booking.id}
+                                onClick={() =>
+                                  updateStatus(booking.id, "completed")
+                                }
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile View */}
+              <div className="md:hidden divide-y divide-border">
+                {paged.map((booking) => (
+                  <div key={booking.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-semibold text-ink">
+                          {booking.patient_name}
+                        </p>
+                        <p className="text-xs text-muted-custom">
+                          {format(new Date(booking.date), "EEEE d MMMM", { locale: fr })} • {booking.time_slot_start.slice(0, 5)}
+                        </p>
+                      </div>
+                      <StatusBadge status={booking.status} />
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                        {CARE_TYPE_LABELS[booking.care_type as CareType] || booking.care_type}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-9 gap-1.5 text-xs"
+                        asChild
+                      >
+                        <a href={`tel:${booking.patient_phone}`}>
+                          <Phone className="h-3.5 w-3.5 text-forest" />
+                          Appeler
+                        </a>
+                      </Button>
+                      {booking.patient_address && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-9 gap-1.5 text-xs"
+                          asChild
+                        >
+                          <a 
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(booking.patient_address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <MapPin className="h-3.5 w-3.5 text-cyan-600" />
+                            GPS
+                          </a>
+                        </Button>
+                      )}
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-9 w-9 shrink-0"
+                        onClick={() => {
+                          setSelectedBooking(booking);
+                          setAdminNotes(booking.admin_notes || "");
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {booking.status === "pending" && (
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          className="flex-1 h-9 bg-forest hover:bg-forest/90 text-xs"
+                          size="sm"
+                          disabled={loading === booking.id}
+                          onClick={() => updateStatus(booking.id, "confirmed")}
+                        >
+                          {loading === booking.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Check className="h-3.5 w-3.5 mr-1" />}
+                          Confirmer
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          className="flex-1 h-9 text-xs"
+                          size="sm"
+                          disabled={loading === booking.id}
+                          onClick={() => updateStatus(booking.id, "cancelled")}
+                        >
+                          <X className="h-3.5 w-3.5 mr-1" />
+                          Annuler
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {booking.status === "confirmed" && (
+                      <Button
+                        className="w-full h-9 bg-secondary hover:bg-secondary/90 text-xs"
+                        size="sm"
+                        disabled={loading === booking.id}
+                        onClick={() => updateStatus(booking.id, "completed")}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                        Marquer comme terminé
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
               <DataTablePagination
                 currentPage={page}
                 totalItems={filtered.length}
