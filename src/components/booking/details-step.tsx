@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Send } from "lucide-react";
+import { ArrowLeft, Loader2, Send, HelpCircle } from "lucide-react";
 import { CARE_TYPE_LABELS } from "@/types/database";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
@@ -33,10 +33,20 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileEnabled, setTurnstileEnabled] = useState(false);
+  const [showMathFallback, setShowMathFallback] = useState(false);
 
   useEffect(() => {
     setTurnstileEnabled(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-  }, []);
+    
+    // Show math fallback if Turnstile hasn't succeeded after 6 seconds
+    const timer = setTimeout(() => {
+      if (!turnstileToken) {
+        setShowMathFallback(true);
+      }
+    }, 6000);
+    
+    return () => clearTimeout(timer);
+  }, [turnstileToken]);
 
   const {
     register,
@@ -50,12 +60,14 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
       time_slot_start: data.time_slot_start,
       time_slot_end: data.time_slot_end,
       care_type: data.care_type as any,
+      honeypot: "",
     },
   });
 
   const onFormSubmit = async (formData: BookingFormData) => {
-    if (turnstileEnabled && !turnstileToken) {
-      toast.error("Veuillez patienter pendant la validation anti-robot");
+    // If Turnstile is enabled, it's the primary, but we allow submission if math is filled
+    if (turnstileEnabled && !turnstileToken && !formData.math_answer) {
+      toast.error("Veuillez patienter pour la validation ou répondre au défi mathématique");
       return;
     }
 
@@ -129,6 +141,9 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
           onSubmit={handleSubmit(onFormSubmit, handleValidationError)} 
           className="space-y-5"
         >
+          {/* Honeypot field for spam protection */}
+          <input type="text" {...register("honeypot")} className="hidden" tabIndex={-1} autoComplete="off" />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="space-y-2">
               <Label htmlFor="patient_name">Nom complet *</Label>
@@ -217,19 +232,40 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
             />
           </div>
 
-          <TurnstileWidget
-            onSuccess={(token) => {
-              setTurnstileToken(token);
-              setValue("turnstile_token", token);
-            }}
-            onExpire={() => {
-              setTurnstileToken(null);
-              setValue("turnstile_token", "");
-            }}
-            onError={() => {
-              console.error("Turnstile error");
-            }}
-          />
+          <div className="space-y-4 rounded-3xl border border-slate-100 bg-slate-50/30 p-4 sm:p-6">
+            <TurnstileWidget
+              onSuccess={(token) => {
+                setTurnstileToken(token);
+                setValue("turnstile_token", token);
+              }}
+              onExpire={() => {
+                setTurnstileToken(null);
+                setValue("turnstile_token", "");
+              }}
+            />
+
+            {(showMathFallback || !turnstileToken) && (
+              <div className="space-y-3 pt-2 border-t border-slate-100">
+                <div className="flex items-center gap-2 text-forest">
+                  <HelpCircle className="h-4 w-4" />
+                  <Label htmlFor="math_answer" className="text-xs font-semibold uppercase tracking-wider">
+                    Défi de secours (si Turnstile échoue)
+                  </Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-muted-custom bg-white px-3 py-2 rounded-xl border border-slate-200">
+                    Combien font 3 + 4 ?
+                  </span>
+                  <Input
+                    id="math_answer"
+                    placeholder="Votre réponse"
+                    className="h-10 w-32 rounded-xl border-slate-200 bg-white px-4"
+                    {...register("math_answer")}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
           <Button
             type="submit"

@@ -5,20 +5,20 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { getSettings } from "@/lib/settings";
 import { rateLimit } from "@/lib/rate-limit";
-import { validateTurnstileToken } from "@/lib/turnstile";
+import { validateBotProtection } from "@/lib/turnstile";
 import { headers } from "next/headers";
 
 export async function submitContact(data: ContactFormData) {
   try {
-    // Check honeypot before parsing — if filled, silently accept
-    if (data.honeypot) {
-      return { success: true };
-    }
-
     // Bot protection
-    const isBotValid = await validateTurnstileToken(data.turnstile_token);
+    const isBotValid = await validateBotProtection({
+      token: data.turnstile_token,
+      honeypot: data.honeypot,
+      mathAnswer: data.math_answer,
+    });
+    
     if (!isBotValid) {
-      return { success: false, error: "Validation anti-robot échouée" };
+      return { success: false, error: "Validation anti-robot échouée. Veuillez remplir le défi mathématique si Turnstile ne s'affiche pas." };
     }
 
     // Rate limit by IP

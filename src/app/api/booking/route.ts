@@ -3,7 +3,7 @@ import { bookingFormSchema } from "@/lib/validations";
 import { escapeHtml } from "@/lib/utils";
 import { getSettings } from "@/lib/settings";
 import { rateLimit } from "@/lib/rate-limit";
-import { validateTurnstileToken } from "@/lib/turnstile";
+import { validateBotProtection } from "@/lib/turnstile";
 import { env } from "@/lib/env";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -20,10 +20,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Bot protection
-    const isBotValid = await validateTurnstileToken(parsed.data.turnstile_token);
+    const isBotValid = await validateBotProtection({
+      token: parsed.data.turnstile_token,
+      honeypot: parsed.data.honeypot,
+      mathAnswer: parsed.data.math_answer,
+    });
+    
     if (!isBotValid) {
       return NextResponse.json(
-        { error: "Validation anti-robot échouée" },
+        { error: "Validation anti-robot échouée. Veuillez remplir le défi mathématique si Turnstile ne s'affiche pas." },
         { status: 403 }
       );
     }

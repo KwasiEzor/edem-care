@@ -33,6 +33,7 @@ export const contactFormSchema = z.object({
     .max(2000, "Le message est trop long"),
   honeypot: z.string().max(0, "Spam détecté"),
   turnstile_token: z.string().optional(),
+  math_answer: z.string().optional(),
 });
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;
@@ -62,6 +63,8 @@ export const bookingFormSchema = z.object({
     .min(1)
     .regex(timeSlotRegex, "Format de créneau invalide"),
   turnstile_token: z.string().optional(),
+  honeypot: z.string().max(0, "Spam détecté").optional(),
+  math_answer: z.string().optional(),
 });
 
 export type BookingFormData = z.infer<typeof bookingFormSchema>;
