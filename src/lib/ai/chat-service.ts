@@ -1,4 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getSettings } from "@/lib/settings";
 import { env } from "@/lib/env";
 
@@ -39,40 +41,120 @@ export interface AIResponse {
   bookingIntent: boolean;
   suggestedCareType: string | null;
   isEmergency: boolean;
+  provider: string;
+}
+
+type Provider = "anthropic" | "openai" | "google";
+
+async function generateWithAnthropic(
+  model: string,
+  system: string,
+  messages: { role: "user" | "assistant"; content: string }[]
+): Promise<string> {
+  if (!env.ANTHROPIC_API_KEY) throw new Error("Anthropic API key missing");
+  const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const response = await anthropic.messages.create({
+    model: model || "claude-3-5-sonnet-latest",
+    max_tokens: 512,
+    system,
+    messages: messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    })),
+  });
+  return response.content[0].type === "text" ? response.content[0].text : "";
+}
+
+async function generateWithOpenAI(
+  model: string,
+  system: string,
+  messages: { role: "user" | "assistant"; content: string }[]
+): Promise<string> {
+  if (!env.OPENAI_API_KEY) throw new Error("OpenAI API key missing");
+  const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+  const response = await openai.chat.completions.create({
+    model: model || "gpt-4o",
+    messages: [
+      { role: "system", content: system },
+      ...messages.map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+    ],
+    max_tokens: 512,
+  });
+  return response.choices[0].message.content || "";
+}
+
+async function generateWithGoogle(
+  model: string,
+  system: string,
+  messages: { role: "user" | "assistant"; content: string }[]
+): Promise<string> {
+  if (!env.GEMINI_API_KEY) throw new Error("Gemini API key missing");
+  const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+  const gemini = genAI.getGenerativeModel({ model: model || "gemini-1.5-flash" });
+  
+  const chat = gemini.startChat({
+    history: messages.slice(0, -1).map(m => ({
+      role: m.role === "user" ? "user" : "model",
+      parts: [{ text: m.content }],
+    })),
+    systemInstruction: system,
+  });
+
+  const lastMessage = messages[messages.length - 1].content;
+  const result = await chat.sendMessage(lastMessage);
+  return result.response.text();
 }
 
 export async function generateAIResponse(
   messages: { role: "user" | "assistant"; content: string }[]
 ): Promise<AIResponse> {
   const settings = await getSettings();
+  const systemPrompt = settings.chatbot_system_prompt ?? SYSTEM_PROMPT;
+  
+  const providers: Provider[] = ["anthropic", "openai", "google"];
+  // Move preferred provider to the front
+  const preferred = (settings as any).chatbot_provider as Provider || "anthropic";
+  const orderedProviders = [preferred, ...providers.filter(p => p !== preferred)];
 
-  const anthropic = new Anthropic({
-    apiKey: env.ANTHROPIC_API_KEY!,
-  });
+  let lastError: any = null;
+  
+  for (const provider of orderedProviders) {
+    try {
+      let rawText = "";
+      let model = settings.chatbot_model;
 
-  const response = await anthropic.messages.create({
-    model: settings.chatbot_model || "claude-3-5-sonnet-latest",
-    max_tokens: 512,
-    system: settings.chatbot_system_prompt ?? SYSTEM_PROMPT,
-    messages: messages.map((m) => ({
-      role: m.role,
-      content: m.content,
-    })),
-  });
+      // Default models if the settings model doesn't match the provider
+      if (provider === "anthropic" && !model.includes("claude")) model = "claude-3-5-sonnet-latest";
+      if (provider === "openai" && !model.includes("gpt")) model = "gpt-4o";
+      if (provider === "google" && !model.includes("gemini")) model = "gemini-1.5-flash";
 
-  const rawText =
-    response.content[0].type === "text" ? response.content[0].text : "";
+      if (provider === "anthropic") {
+        rawText = await generateWithAnthropic(model, systemPrompt, messages);
+      } else if (provider === "openai") {
+        rawText = await generateWithOpenAI(model, systemPrompt, messages);
+      } else if (provider === "google") {
+        rawText = await generateWithGoogle(model, systemPrompt, messages);
+      }
 
-  const intentMatch = rawText.match(/\[BOOKING_INTENT:(\w+)\]/);
-  const suggestedCareType = intentMatch ? intentMatch[1] : null;
-  const bookingIntent = !!intentMatch;
+      const intentMatch = rawText.match(/\[BOOKING_INTENT:(\w+)\]/);
+      const suggestedCareType = intentMatch ? intentMatch[1] : null;
+      const bookingIntent = !!intentMatch;
+      const isEmergency = rawText.includes("[EMERGENCY_TRIAGE_112]");
+      const displayMessage = rawText
+        .replace(/\[BOOKING_INTENT:\w+\]/g, "")
+        .replace(/\[EMERGENCY_TRIAGE_112\]/g, "")
+        .trim();
 
-  const isEmergency = rawText.includes("[EMERGENCY_TRIAGE_112]");
+      return { displayMessage, bookingIntent, suggestedCareType, isEmergency, provider };
+    } catch (err) {
+      console.error(`AI Provider ${provider} failed:`, err);
+      lastError = err;
+      continue;
+    }
+  }
 
-  const displayMessage = rawText
-    .replace(/\[BOOKING_INTENT:\w+\]/g, "")
-    .replace(/\[EMERGENCY_TRIAGE_112\]/g, "")
-    .trim();
-
-  return { displayMessage, bookingIntent, suggestedCareType, isEmergency };
+  throw new Error(`All AI providers failed. Last error: ${lastError?.message}`);
 }

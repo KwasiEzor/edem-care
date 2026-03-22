@@ -64,6 +64,23 @@ async function saveSettings(data: Partial<AdminSettings>) {
   return res.json();
 }
 
+const MODEL_OPTIONS: Record<string, { label: string; value: string }[]> = {
+  anthropic: [
+    { label: "Claude 3.5 Sonnet (Conseillé)", value: "claude-3-5-sonnet-latest" },
+    { label: "Claude 3 Opus (Puissant)", value: "claude-3-opus-latest" },
+    { label: "Claude 3 Haiku (Rapide)", value: "claude-3-haiku-20240307" },
+  ],
+  openai: [
+    { label: "GPT-4o (Conseillé)", value: "gpt-4o" },
+    { label: "GPT-4o mini (Économique/Rapide)", value: "gpt-4o-mini" },
+    { label: "GPT-4 Turbo", value: "gpt-4-turbo" },
+  ],
+  google: [
+    { label: "Gemini 1.5 Flash (Rapide)", value: "gemini-1.5-flash" },
+    { label: "Gemini 1.5 Pro (Puissant)", value: "gemini-1.5-pro" },
+  ],
+};
+
 export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormProps) {
   const [settings, setSettings] = useState<AdminSettings>(initialSettings);
   const [saving, setSaving] = useState<string | null>(null);
@@ -72,7 +89,19 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
     key: K,
     value: AdminSettings[K]
   ) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
+    setSettings((prev) => {
+      const next = { ...prev, [key]: value };
+      
+      // Auto-update model if provider changes to a valid default for that provider
+      if (key === "chatbot_provider") {
+        const provider = value as string;
+        if (provider === "anthropic") next.chatbot_model = "claude-3-5-sonnet-latest";
+        if (provider === "openai") next.chatbot_model = "gpt-4o";
+        if (provider === "google") next.chatbot_model = "gemini-1.5-flash";
+      }
+      
+      return next;
+    });
   };
 
   const handleSave = async (
@@ -282,27 +311,42 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
                 onCheckedChange={(v) => update("chatbot_enabled", v)}
               />
               <FieldRow
+                label="Fournisseur d'IA"
+                htmlFor="chatbot_provider"
+                description="Le service cloud utilisé (avec repli automatique en cas de panne)"
+              >
+                <Select
+                  value={settings.chatbot_provider}
+                  onValueChange={(v) => update("chatbot_provider", v as any)}
+                >
+                  <SelectTrigger id="chatbot_provider" className="w-full">
+                    <SelectValue placeholder="Choisir un fournisseur" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="anthropic">Anthropic (Claude)</SelectItem>
+                    <SelectItem value="openai">OpenAI (GPT)</SelectItem>
+                    <SelectItem value="google">Google (Gemini)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FieldRow>
+              <FieldRow
                 label="Modèle d'IA"
                 htmlFor="chatbot_model"
-                description="Le modèle utilisé pour générer les réponses"
+                description="Le modèle spécifique utilisé pour les réponses"
               >
                 <Select
                   value={settings.chatbot_model}
-                  onValueChange={(v) => update("chatbot_model", v || "claude-3-5-sonnet-latest")}
+                  onValueChange={(v) => update("chatbot_model", v)}
                 >
                   <SelectTrigger id="chatbot_model" className="w-full">
                     <SelectValue placeholder="Sélectionner un modèle" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="claude-3-5-sonnet-latest">
-                      Claude 3.5 Sonnet (Recommandé)
-                    </SelectItem>
-                    <SelectItem value="claude-3-opus-latest">
-                      Claude 3 Opus (Plus puissant)
-                    </SelectItem>
-                    <SelectItem value="claude-3-haiku-20240307">
-                      Claude 3 Haiku (Plus rapide)
-                    </SelectItem>
+                    {(MODEL_OPTIONS[settings.chatbot_provider] || []).map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </FieldRow>
@@ -347,6 +391,7 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
               onClick={() =>
                 handleSave("chatbot", {
                   chatbot_enabled: settings.chatbot_enabled,
+                  chatbot_provider: settings.chatbot_provider,
                   chatbot_model: settings.chatbot_model,
                   chatbot_system_prompt: settings.chatbot_system_prompt,
                 })

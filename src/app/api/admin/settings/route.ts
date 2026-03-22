@@ -17,6 +17,7 @@ const settingsUpdateSchema = z.object({
   booking_allow_sundays: z.boolean().optional(),
 
   chatbot_enabled: z.boolean().optional(),
+  chatbot_provider: z.enum(["anthropic", "openai", "google"]).optional(),
   chatbot_model: z.string().min(1).max(100).optional(),
   chatbot_system_prompt: z.string().max(5000).nullable().optional(),
 

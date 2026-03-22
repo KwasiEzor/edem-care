@@ -37,6 +37,7 @@ describe('AI Chat Service', () => {
     expect(result.suggestedCareType).toBe('prise_de_sang')
     expect(result.displayMessage).toBe('Bien sûr, je peux vous aider.')
     expect(result.isEmergency).toBe(false)
+    expect(result.provider).toBe('anthropic')
   })
 
   it('should identify an emergency triage', async () => {
@@ -52,6 +53,7 @@ describe('AI Chat Service', () => {
 
     expect(result.isEmergency).toBe(true)
     expect(result.displayMessage).toBe('Appelez immédiatement le 112 !')
+    expect(result.provider).toBe('anthropic')
   })
 
   it('should handle response without tags', async () => {
@@ -68,5 +70,6 @@ describe('AI Chat Service', () => {
     expect(result.bookingIntent).toBe(false)
     expect(result.isEmergency).toBe(false)
     expect(result.displayMessage).toBe('Bonjour, comment allez-vous ?')
+    expect(result.provider).toBe('anthropic')
   })
 })

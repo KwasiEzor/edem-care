@@ -52,6 +52,7 @@ export interface AdminSettings {
 
   // Chatbot IA
   chatbot_enabled: boolean;
+  chatbot_provider: "anthropic" | "openai" | "google";
   chatbot_model: string;
   chatbot_system_prompt: string | null;
 
@@ -92,6 +93,7 @@ export const DEFAULT_SETTINGS: AdminSettings = {
   booking_allow_sundays: false,
 
   chatbot_enabled: true,
+  chatbot_provider: "anthropic",
   chatbot_model: "claude-3-5-sonnet-latest",
   chatbot_system_prompt: null,
 

@@ -11,6 +11,8 @@ const envSchema = z.object({
 
   // AI
   ANTHROPIC_API_KEY: (isServer && !isBuild) ? z.string().min(1) : z.string().optional(),
+  OPENAI_API_KEY: (isServer && !isBuild) ? z.string().min(1).optional() : z.string().optional(),
+  GEMINI_API_KEY: (isServer && !isBuild) ? z.string().min(1).optional() : z.string().optional(),
 
   // WhatsApp
   WHATSAPP_ACCESS_TOKEN: z.string().min(1).optional(),
@@ -35,6 +37,8 @@ export const env = envSchema.parse({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   WHATSAPP_ACCESS_TOKEN: process.env.WHATSAPP_ACCESS_TOKEN,
   WHATSAPP_PHONE_NUMBER_ID: process.env.WHATSAPP_PHONE_NUMBER_ID,
   WHATSAPP_VERIFY_TOKEN: process.env.WHATSAPP_VERIFY_TOKEN,
