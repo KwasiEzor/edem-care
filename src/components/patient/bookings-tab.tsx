@@ -40,10 +40,15 @@ export function BookingsTab({ bookings, onBookingsChange }: BookingsTabProps) {
   const now = new Date();
   const filtered = bookings.filter((b) => {
     if (filter === "cancelled") return b.status === "cancelled";
+    if (b.status === "cancelled") return false;
+    
+    // Completed bookings always go to past
+    if (b.status === "completed") return filter === "past";
+
     const bookingDate = new Date(b.date);
     if (filter === "past")
-      return bookingDate < now && b.status !== "cancelled";
-    return bookingDate >= now && b.status !== "cancelled";
+      return bookingDate < now;
+    return bookingDate >= now;
   });
 
   const handleCancel = async () => {

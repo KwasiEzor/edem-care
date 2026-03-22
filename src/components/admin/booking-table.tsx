@@ -62,7 +62,7 @@ interface BookingTableProps {
 
 export function BookingTable({ initialBookings }: BookingTableProps) {
   const [bookings, setBookings] = useState(initialBookings);
-  const [filter, setFilter] = useState<string>("all");
+  const [filter, setFilter] = useState<string>("active");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -77,7 +77,13 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
   const router = useRouter();
 
   const filtered = useMemo(() => {
-    let list = filter === "all" ? bookings : bookings.filter((b) => b.status === filter);
+    let list = bookings;
+    
+    if (filter === "active") {
+      list = bookings.filter((b) => b.status === "pending" || b.status === "confirmed");
+    } else if (filter !== "all") {
+      list = bookings.filter((b) => b.status === filter);
+    }
 
     if (search) {
       const q = search.toLowerCase();
@@ -176,6 +182,7 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="active">Rendez-vous actifs</SelectItem>
             <SelectItem value="all">Tous les statuts</SelectItem>
             <SelectItem value="pending">En attente</SelectItem>
             <SelectItem value="confirmed">Confirmé</SelectItem>
