@@ -174,13 +174,14 @@ export function ChatWidget() {
                         <p className="text-xs text-red-600 mb-3 max-w-[250px]">
                           Vos symptômes nécessitent une attention médicale immédiate. N&apos;attendez pas.
                         </p>
-                        <Button
-                          size="sm"
-                          asChild
-                          className="h-9 w-full rounded-full bg-red-600 text-white hover:bg-red-700 flex items-center justify-center font-bold"
-                        >
-                          <a href="tel:112">Appeler le 112</a>
-                        </Button>
+                        <a href="tel:112" className="w-full">
+                          <Button
+                            size="sm"
+                            className="h-9 w-full rounded-full bg-red-600 text-white hover:bg-red-700 flex items-center justify-center font-bold"
+                          >
+                            Appeler le 112
+                          </Button>
+                        </a>
                       </div>
                     </div>
                   )}
@@ -195,18 +196,17 @@ export function ChatWidget() {
                             msg.suggested_care_type as CareType
                           ] || msg.suggested_care_type}
                         </p>
-                        <Button
-                          size="sm"
-                          asChild
-                          className="mt-2 h-8 rounded-full bg-forest text-white hover:bg-forest/90"
+                        <Link
+                          href={`/rendez-vous?care_type=${msg.suggested_care_type}`}
                         >
-                          <Link
-                            href={`/rendez-vous?care_type=${msg.suggested_care_type}`}
+                          <Button
+                            size="sm"
+                            className="mt-2 h-8 rounded-full bg-forest text-white hover:bg-forest/90"
                           >
                             Prendre rendez-vous
                             <ArrowRight className="ml-1 h-3 w-3" />
-                          </Link>
-                        </Button>
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   )}

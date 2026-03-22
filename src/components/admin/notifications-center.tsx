@@ -176,17 +176,16 @@ export function NotificationsCenter({
                         
                         <div className="flex items-center gap-2 ml-auto">
                           {link && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              asChild
-                              className="h-8 text-xs font-medium text-forest hover:text-forest hover:bg-forest/5"
-                            >
-                              <Link href={link}>
+                            <Link href={link}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 text-xs font-medium text-forest hover:text-forest hover:bg-forest/5"
+                              >
                                 <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                                 Voir les détails
-                              </Link>
-                            </Button>
+                              </Button>
+                            </Link>
                           )}
                           
                           {!notif.is_read && (

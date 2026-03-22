@@ -151,7 +151,7 @@ export async function generateAIResponse(
       return { displayMessage, bookingIntent, suggestedCareType, isEmergency, provider };
     } catch (err) {
       console.error(`AI Provider ${provider} failed:`, err);
-      lastError = err;
+      lastError = err as Error;
       continue;
     }
   }

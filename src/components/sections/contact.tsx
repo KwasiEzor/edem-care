@@ -19,7 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Phone, Mail, MapPin, Send, Loader2, HelpCircle } from "lucide-react";
 
 import { toast } from "sonner";
-import { CARE_TYPE_LABELS } from "@/types/database";
+import { CARE_TYPE_LABELS, type CareType } from "@/types/database";
 import { useTransition, useState, useEffect } from "react";
 import { TurnstileWidget } from "@/components/ui/turnstile-widget";
 import { env } from "@/lib/env";

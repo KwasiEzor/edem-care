@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, Loader2, Send, HelpCircle } from "lucide-react";
-import { CARE_TYPE_LABELS } from "@/types/database";
+import { CARE_TYPE_LABELS, type CareType } from "@/types/database";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import type { BookingData } from "./booking-wizard";
