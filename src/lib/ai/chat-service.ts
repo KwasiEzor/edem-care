@@ -93,14 +93,16 @@ async function generateWithGoogle(
 ): Promise<string> {
   if (!env.GEMINI_API_KEY) throw new Error("Gemini API key missing");
   const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-  const gemini = genAI.getGenerativeModel({ model: model || "gemini-1.5-flash" });
+  const gemini = genAI.getGenerativeModel({ 
+    model: model || "gemini-1.5-flash",
+    systemInstruction: system,
+  });
   
   const chat = gemini.startChat({
     history: messages.slice(0, -1).map(m => ({
       role: m.role === "user" ? "user" : "model",
       parts: [{ text: m.content }],
     })),
-    systemInstruction: system,
   });
 
   const lastMessage = messages[messages.length - 1].content;
@@ -115,14 +117,18 @@ export async function generateAIResponse(
   const systemPrompt = settings.chatbot_system_prompt ?? SYSTEM_PROMPT;
   
   const providers: Provider[] = ["anthropic", "openai", "google"];
-  // Move preferred provider to the front
   const preferred = (settings.chatbot_provider as Provider) || "anthropic";
   const orderedProviders = [preferred, ...providers.filter(p => p !== preferred)];
 
-  let lastError: Error | null = null;
+  const errors: string[] = [];
   
   for (const provider of orderedProviders) {
     try {
+      // Check if API key exists for this provider
+      if (provider === "anthropic" && !env.ANTHROPIC_API_KEY) throw new Error("Clé Anthropic manquante");
+      if (provider === "openai" && !env.OPENAI_API_KEY) throw new Error("Clé OpenAI manquante");
+      if (provider === "google" && !env.GEMINI_API_KEY) throw new Error("Clé Gemini manquante");
+
       let rawText = "";
       let model = settings.chatbot_model;
 
@@ -149,12 +155,13 @@ export async function generateAIResponse(
         .trim();
 
       return { displayMessage, bookingIntent, suggestedCareType, isEmergency, provider };
-    } catch (err) {
-      console.error(`AI Provider ${provider} failed:`, err);
-      lastError = err as Error;
+    } catch (err: any) {
+      const msg = err.message || String(err);
+      console.error(`AI Provider ${provider} failed:`, msg);
+      errors.push(`${provider}: ${msg}`);
       continue;
     }
   }
 
-  throw new Error(`All AI providers failed. Last error: ${lastError?.message}`);
+  throw new Error(`Tous les services IA ont échoué. Détails: ${errors.join(" | ")}`);
 }
