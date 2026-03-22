@@ -32,9 +32,10 @@ describe('WhatsApp Conversations Data Access Layer', () => {
     const mockConversations = [{ id: '1', phone_number: '+123456' }]
     mockSupabase.order.mockResolvedValueOnce({ data: mockConversations, error: null })
 
-    const result = await getWhatsAppConversations()
+    const { data, error } = await getWhatsAppConversations()
 
-    expect(result).toEqual(mockConversations)
+    expect(data).toEqual(mockConversations)
+    expect(error).toBeNull()
     expect(mockSupabase.from).toHaveBeenCalledWith('whatsapp_conversations')
   })
 
@@ -42,9 +43,10 @@ describe('WhatsApp Conversations Data Access Layer', () => {
     const mockConversation = { id: '1', phone_number: '+123456' }
     mockSupabase.single.mockResolvedValueOnce({ data: mockConversation, error: null })
 
-    const result = await getConversationById('1')
+    const { data, error } = await getConversationById('1')
 
-    expect(result).toEqual(mockConversation)
+    expect(data).toEqual(mockConversation)
+    expect(error).toBeNull()
     expect(mockSupabase.from).toHaveBeenCalledWith('whatsapp_conversations')
     expect(mockSupabase.eq).toHaveBeenCalledWith('id', '1')
   })

@@ -3,7 +3,7 @@ import { PatientsManager } from "@/components/admin/patients-manager";
 import { getAllPatients } from "@/lib/dal/patients";
 
 export default async function PatientsPage() {
-  const patients = await getAllPatients();
+  const { data: patients } = await getAllPatients();
 
   return (
     <>
@@ -11,7 +11,7 @@ export default async function PatientsPage() {
         title="Patients"
         description="Gérez la liste de vos patients"
       />
-      <PatientsManager initialPatients={patients} />
+      <PatientsManager initialPatients={patients || []} />
     </>
   );
 }

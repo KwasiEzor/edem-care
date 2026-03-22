@@ -9,6 +9,8 @@ const settingsUpdateSchema = z.object({
   business_zone: z.string().min(1).max(200).optional(),
   business_phone: z.string().min(1).max(30).optional(),
   business_email: z.string().email().nullable().optional(),
+  business_inami: z.string().max(50).nullable().optional(),
+  business_bce: z.string().max(50).nullable().optional(),
   admin_display_name: z.string().max(100).nullable().optional(),
 
   booking_max_days_ahead: z.number().int().min(7).max(180).optional(),

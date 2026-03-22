@@ -6,10 +6,14 @@ import { Services } from "@/components/sections/services";
 import { Trust } from "@/components/sections/trust";
 import { Founder } from "@/components/sections/founder";
 import { CareTimeline } from "@/components/sections/care-timeline";
+import { Contact } from "@/components/sections/contact";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Phone } from "lucide-react";
+import { getSettings } from "@/lib/settings";
 
-export default function Home() {
+export default async function Home() {
+  const settings = await getSettings();
+
   return (
     <>
       <Navbar />
@@ -19,6 +23,11 @@ export default function Home() {
         <CareTimeline />
         <Founder />
         <Trust />
+        <Contact 
+          businessPhone={settings.business_phone}
+          businessEmail={settings.business_email || "contact@edem-care.be"}
+          businessZone={settings.business_zone}
+        />
 
         <section className="py-20 lg:py-28">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -39,7 +48,6 @@ export default function Home() {
                 <div className="flex flex-col gap-4 sm:flex-row lg:flex-col">
                   <Button
                     size="lg"
-                    nativeButton={false}
                     render={<Link href="/rendez-vous" />}
                     className="h-12 rounded-full bg-white px-8 text-base text-forest hover:bg-slate-100"
                   >
@@ -49,8 +57,7 @@ export default function Home() {
                   <Button
                     variant="outline"
                     size="lg"
-                    nativeButton={false}
-                    render={<Link href="/contact" />}
+                    render={<a href={`tel:${settings.business_phone.replace(/[\s\-().]/g, "")}`} />}
                     className="h-12 rounded-full border-white/25 bg-white/10 px-8 text-base text-white hover:bg-white/15"
                   >
                     <Phone className="h-4 w-4" />

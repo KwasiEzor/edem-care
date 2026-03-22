@@ -46,6 +46,49 @@ export async function sendWhatsAppMessage({
   return response.json();
 }
 
+export async function sendWhatsAppTemplate({
+  to,
+  templateName,
+  languageCode = "fr",
+  components = [],
+}: {
+  to: string;
+  templateName: string;
+  languageCode?: string;
+  components?: any[];
+}) {
+  const { accessToken, phoneNumberId } = getConfig();
+
+  const response = await fetch(
+    `https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to,
+        type: "template",
+        template: {
+          name: templateName,
+          language: { code: languageCode },
+          components,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`WhatsApp API error: ${response.status} - ${error}`);
+  }
+
+  return response.json();
+}
+
 export async function markMessageAsRead(messageId: string) {
   const { accessToken, phoneNumberId } = getConfig();
 

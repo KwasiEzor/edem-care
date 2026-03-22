@@ -1,13 +1,16 @@
 import { env } from "@/lib/env";
+import { verifyMathChallenge } from "./security/challenges";
 
 export async function validateBotProtection({
   token,
   honeypot,
   mathAnswer,
+  mathToken,
 }: {
   token?: string;
   honeypot?: string;
   mathAnswer?: string;
+  mathToken?: string;
 }) {
   // 1. Honeypot check (always first)
   if (honeypot && honeypot.length > 0) {
@@ -37,14 +40,13 @@ export async function validateBotProtection({
     }
   }
 
-  // 3. Fallback: Simple Math Challenge if Turnstile failed or was skipped
-  // This ensures that even if Cloudflare is blocked, humans can still submit.
-  if (mathAnswer === "7") {
-    return true;
+  // 3. Fallback: Dynamic Math Challenge if Turnstile failed or was skipped
+  if (mathAnswer && mathToken) {
+    return verifyMathChallenge(mathAnswer, mathToken);
   }
 
-  // If Turnstile is not configured, we allow it (local dev)
-  if (!hasTurnstileKeys) {
+  // If Turnstile is not configured and no math challenge was provided, we allow it (local dev)
+  if (!hasTurnstileKeys && !mathAnswer) {
     return true;
   }
 

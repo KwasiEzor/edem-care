@@ -15,6 +15,7 @@ export async function submitContact(data: ContactFormData) {
       token: data.turnstile_token,
       honeypot: data.honeypot,
       mathAnswer: data.math_answer,
+      mathToken: data.math_token,
     });
     
     if (!isBotValid) {

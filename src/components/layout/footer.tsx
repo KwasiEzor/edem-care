@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { ArrowRight, Clock3, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
 import { CookieSettingsButton } from "./cookie-settings-button";
+import { getSettings } from "@/lib/settings";
 
-export function Footer() {
+export async function Footer() {
+  const settings = await getSettings();
+  const phone = settings.business_phone;
+  const phoneClean = phone.replace(/[\s\-().]/g, "");
+  const email = settings.business_email || "contact@edem-care.be";
+
   return (
     <footer className="relative overflow-hidden bg-[linear-gradient(180deg,#082d5e_0%,#0b4da2_52%,#0b4da2_100%)] text-white">
       <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_top_left,rgba(103,232,249,0.18),transparent_30%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_25%)]" />
@@ -12,7 +18,7 @@ export function Footer() {
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                Edem-Care
+                {settings.business_name}
               </span>
               <h2 className="mt-4 font-heading text-3xl font-bold sm:text-4xl">
                 Un accompagnement infirmier rassurant, chez vous.
@@ -30,11 +36,11 @@ export function Footer() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
-                  href="tel:+32000000000"
+                  href={`tel:${phoneClean}`}
                   className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/15"
                 >
                   <Phone className="h-4 w-4" />
-                  +32 (0) 000 00 00 00
+                  {phone}
                 </a>
               </div>
             </div>
@@ -49,7 +55,7 @@ export function Footer() {
               </div>
               <div className="rounded-[1.5rem] border border-white/12 bg-white/10 p-5">
                 <MapPin className="h-5 w-5 text-cyan-200" />
-                <p className="mt-4 text-lg font-semibold">Bruxelles et environs</p>
+                <p className="mt-4 text-lg font-semibold">{settings.business_zone}</p>
                 <p className="mt-2 text-sm leading-6 text-blue-100/78">
                   Intervention à domicile avec un suivi adapté à votre situation.
                 </p>
@@ -64,10 +70,10 @@ export function Footer() {
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-forest">
                 <span className="font-heading text-xl font-semibold">EC</span>
               </div>
-              <span className="font-heading text-2xl font-bold">Edem-Care</span>
+              <span className="font-heading text-2xl font-bold">{settings.business_name}</span>
             </div>
             <p className="mt-4 text-sm leading-7 text-blue-100/76">
-              Soins infirmiers professionnels à domicile à Bruxelles, avec un accompagnement
+              {settings.business_specialty} à {settings.business_zone}, avec un accompagnement
               attentif, clair et bienveillant.
             </p>
           </div>
@@ -100,19 +106,19 @@ export function Footer() {
             <ul className="mt-4 space-y-4 text-sm text-blue-100/78">
               <li className="flex items-start gap-3">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
-                <a href="tel:+32000000000" className="transition-colors hover:text-white">
-                  +32 (0) 000 00 00 00
+                <a href={`tel:${phoneClean}`} className="transition-colors hover:text-white">
+                  {phone}
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
-                <a href="mailto:contact@edem-care.be" className="transition-colors hover:text-white">
-                  contact@edem-care.be
+                <a href={`mailto:${email}`} className="transition-colors hover:text-white">
+                  {email}
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
-                <span>Bruxelles, Belgique</span>
+                <span>{settings.business_zone}</span>
               </li>
             </ul>
           </div>
@@ -128,15 +134,15 @@ export function Footer() {
               <li>
                 <CookieSettingsButton />
               </li>
-              <li>N° INAMI : à compléter</li>
-              <li>N° BCE : à compléter</li>
+              <li>N° INAMI : {settings.business_inami || "—"}</li>
+              <li>N° BCE : {settings.business_bce || "—"}</li>
             </ul>
           </div>
         </div>
 
         <div className="mt-10 flex flex-col gap-3 border-t border-white/12 pt-6 text-sm text-blue-100/60 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} Edem-Care. Tous droits réservés.</p>
-          <p>Site conçu pour une expérience simple, claire et rassurante.</p>
+          <p>&copy; {new Date().getFullYear()} {settings.business_name}. Tous droits réservés.</p>
+          <p>Site conçu pour une expérience simple, clair et rassurante.</p>
         </div>
       </div>
     </footer>

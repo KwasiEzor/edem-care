@@ -6,10 +6,12 @@ import { getWhatsAppConversations } from "@/lib/dal/whatsapp_conversations";
 export const dynamic = "force-dynamic";
 
 export default async function WhatsAppPage() {
-  const [conversations, settings] = await Promise.all([
+  const [conversationsResult, settings] = await Promise.all([
     getWhatsAppConversations(),
     getSettings(),
   ]);
+
+  const conversations = conversationsResult.data || [];
 
   return (
     <>

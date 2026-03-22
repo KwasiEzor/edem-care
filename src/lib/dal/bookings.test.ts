@@ -32,19 +32,21 @@ describe('Bookings Data Access Layer', () => {
     const mockBooking = { id: '1', patient_name: 'John Doe', patient_notes: 'Sensitive info' }
     mockSupabase.single.mockResolvedValueOnce({ data: mockBooking, error: null })
 
-    const result = await getBookingById('1')
+    const { data, error } = await getBookingById('1')
 
-    expect(result).toEqual(mockBooking)
+    expect(data).toEqual(mockBooking)
+    expect(error).toBeNull()
     expect(mockSupabase.from).toHaveBeenCalledWith('bookings')
     expect(mockSupabase.eq).toHaveBeenCalledWith('id', '1')
   })
 
-  it('should return null if booking is not found', async () => {
+  it('should return error if booking is not found', async () => {
     mockSupabase.single.mockResolvedValueOnce({ data: null, error: { message: 'Not found' } })
 
-    const result = await getBookingById('99')
+    const { data, error } = await getBookingById('99')
 
-    expect(result).toBeNull()
+    expect(data).toBeNull()
+    expect(error?.message).toBe('Not found')
   })
 
   it('should get all bookings with patient address', async () => {
@@ -53,11 +55,12 @@ describe('Bookings Data Access Layer', () => {
     ]
     mockSupabase.order.mockResolvedValueOnce({ data: mockBookings, error: null })
 
-    const result = await getBookings()
+    const { data, error } = await getBookings()
 
-    expect(result).toEqual([
+    expect(data).toEqual([
       { id: '1', patient_name: 'John', patients: { address: '123 Main St' }, patient_address: '123 Main St' }
     ])
+    expect(error).toBeNull()
     expect(mockSupabase.from).toHaveBeenCalledWith('bookings')
     expect(mockSupabase.select).toHaveBeenCalledWith('*, patients(address)')
   })

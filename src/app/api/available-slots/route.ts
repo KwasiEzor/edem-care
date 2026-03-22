@@ -32,6 +32,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Timezone-safe Brussels past-date check
+  const { compareWithBrusselsToday } = await import("@/lib/utils");
+  if (compareWithBrusselsToday(date) === -1) {
+    return NextResponse.json({ slots: [] });
+  }
+
   const supabase = createAdminClient();
 
   const { data, error } = await supabase.rpc("get_available_slots", {

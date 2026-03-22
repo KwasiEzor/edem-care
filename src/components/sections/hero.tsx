@@ -14,7 +14,8 @@ import {
   Star,
   Stethoscope,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const trustMetrics = [
   { value: "7j/7", label: "Disponibilité pour les soins urgents" },
@@ -97,25 +98,26 @@ export function Hero() {
                 variants={fadeUp}
                 className="mt-8 flex flex-col gap-4 sm:flex-row"
               >
-                <Button
-                  size="lg"
-                  className="h-12 bg-white px-7 text-base font-semibold text-forest hover:bg-slate-100"
-                  nativeButton={false}
-                  render={<Link href="/rendez-vous" />}
+                <Link
+                  href="/rendez-vous"
+                  className={cn(
+                    buttonVariants({ size: "lg" }),
+                    "h-12 rounded-full bg-white px-7 text-base font-semibold text-forest hover:bg-slate-100"
+                  )}
                 >
                   Prendre rendez-vous
                   <ArrowRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-12 border-white/25 bg-white/10 px-7 text-base text-white hover:bg-white/15"
-                  nativeButton={false}
-                  render={<a href="tel:+32000000000" />}
+                </Link>
+                <a
+                  href="tel:+32000000000"
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "lg" }),
+                    "h-12 rounded-full border-white/25 bg-white/10 px-7 text-base text-white hover:bg-white/15"
+                  )}
                 >
                   <Phone className="h-4 w-4" />
                   Appeler maintenant
-                </Button>
+                </a>
               </motion.div>
 
               <motion.div
@@ -158,7 +160,7 @@ export function Hero() {
                     alt="Illustration d'un infirmier et d'un patient dans un cadre de soins à domicile"
                     width={720}
                     height={760}
-                    preload
+                    priority
                     className="mx-auto h-auto w-full max-w-md"
                     sizes="(max-width: 1024px) 100vw, 40vw"
                   />

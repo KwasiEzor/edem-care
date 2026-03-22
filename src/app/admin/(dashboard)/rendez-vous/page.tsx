@@ -3,7 +3,7 @@ import { BookingTable } from "@/components/admin/booking-table";
 import { getBookings } from "@/lib/dal/bookings";
 
 export default async function BookingsPage() {
-  const bookings = await getBookings();
+  const { data: bookings } = await getBookings();
 
   return (
     <>
@@ -11,7 +11,7 @@ export default async function BookingsPage() {
         title="Rendez-vous"
         description="Gérez les demandes de rendez-vous"
       />
-      <BookingTable initialBookings={bookings} />
+      <BookingTable initialBookings={bookings || []} />
     </>
   );
 }

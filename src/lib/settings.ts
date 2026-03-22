@@ -42,6 +42,8 @@ export interface AdminSettings {
   business_zone: string;
   business_phone: string;
   business_email: string | null;
+  business_inami: string | null;
+  business_bce: string | null;
   admin_display_name: string | null;
 
   // Rendez-vous
@@ -82,6 +84,8 @@ export const DEFAULT_SETTINGS: AdminSettings = {
   business_zone: "Bruxelles et alentours",
   business_phone: "+32 XXX XX XX XX",
   business_email: null,
+  business_inami: null,
+  business_bce: null,
   admin_display_name: null,
 
   booking_max_days_ahead: 60,

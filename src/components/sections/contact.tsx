@@ -24,14 +24,38 @@ import { useTransition, useState, useEffect } from "react";
 import { TurnstileWidget } from "@/components/ui/turnstile-widget";
 import { env } from "@/lib/env";
 
-export function Contact() {
+interface ContactProps {
+  businessPhone: string;
+  businessEmail: string;
+  businessZone: string;
+}
+
+export function Contact({ businessPhone, businessEmail, businessZone }: ContactProps) {
   const [isPending, startTransition] = useTransition();
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileEnabled, setTurnstileEnabled] = useState(false);
   const [showMathFallback, setShowMathFallback] = useState(false);
+  const [mathChallenge, setMathChallenge] = useState<{ question: string; token: string } | null>(null);
+
+  const phoneClean = businessPhone.replace(/[\s\-().]/g, "");
 
   useEffect(() => {
     setTurnstileEnabled(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+    
+    // Fetch dynamic math challenge
+    const fetchChallenge = async () => {
+      try {
+        const res = await fetch('/api/security/challenge');
+        if (res.ok) {
+          const data = await res.json();
+          setMathChallenge(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch math challenge', err);
+      }
+    };
+
+    fetchChallenge();
     
     // Show math fallback if Turnstile hasn't succeeded after 6 seconds
     const timer = setTimeout(() => {
@@ -56,6 +80,12 @@ export function Contact() {
     },
   });
 
+  useEffect(() => {
+    if (mathChallenge?.token) {
+      setValue("math_token", mathChallenge.token);
+    }
+  }, [mathChallenge, setValue]);
+
   const onSubmit = (data: ContactFormData) => {
     if (turnstileEnabled && !turnstileToken && !data.math_answer) {
       toast.error("Veuillez patienter pour la validation ou répondre au défi mathématique");
@@ -64,7 +94,11 @@ export function Contact() {
 
     startTransition(async () => {
       try {
-        const result = await submitContact({ ...data, turnstile_token: turnstileToken || undefined });
+        const result = await submitContact({ 
+          ...data, 
+          turnstile_token: turnstileToken || undefined,
+          math_token: data.math_token || mathChallenge?.token
+        });
         if (result.success) {
           toast.success("Message envoyé avec succès !", {
             description: "Nous vous répondrons dans les plus brefs délais.",
@@ -130,19 +164,19 @@ export function Contact() {
                 {
                   icon: Phone,
                   title: "Téléphone",
-                  value: "+32 (0) 000 00 00 00",
-                  href: "tel:+32000000000",
+                  value: businessPhone,
+                  href: `tel:${phoneClean}`,
                 },
                 {
                   icon: Mail,
                   title: "Email",
-                  value: "contact@edem-care.be",
-                  href: "mailto:contact@edem-care.be",
+                  value: businessEmail,
+                  href: `mailto:${businessEmail}`,
                 },
                 {
                   icon: MapPin,
                   title: "Zone d'intervention",
-                  value: "Bruxelles et environs",
+                  value: businessZone,
                   href: "#",
                 },
               ].map((item, i) => (
@@ -279,7 +313,7 @@ export function Contact() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium text-muted-custom bg-white px-3 py-2 rounded-xl border border-slate-200">
-                          Combien font 3 + 4 ?
+                          Combien font {mathChallenge?.question || "..."} ?
                         </span>
                         <Input
                           id="math_answer"
@@ -287,6 +321,7 @@ export function Contact() {
                           className="h-10 w-32 rounded-xl border-slate-200 bg-white px-4"
                           {...register("math_answer")}
                         />
+                        <input type="hidden" {...register("math_token")} />
                       </div>
                     </div>
                   )}

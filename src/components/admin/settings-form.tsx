@@ -179,6 +179,22 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
                   onChange={(e) => update("business_phone", e.target.value)}
                 />
               </FieldRow>
+              <FieldRow label="N° INAMI" htmlFor="business_inami">
+                <Input
+                  id="business_inami"
+                  value={settings.business_inami ?? ""}
+                  onChange={(e) => update("business_inami", e.target.value || null)}
+                  placeholder="X-XXXXX-XX-XXX"
+                />
+              </FieldRow>
+              <FieldRow label="N° BCE" htmlFor="business_bce">
+                <Input
+                  id="business_bce"
+                  value={settings.business_bce ?? ""}
+                  onChange={(e) => update("business_bce", e.target.value || null)}
+                  placeholder="XXXX.XXX.XXX"
+                />
+              </FieldRow>
             </div>
             <SaveButton
               loading={saving === "profil"}
@@ -190,6 +206,8 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
                   business_zone: settings.business_zone,
                   business_phone: settings.business_phone,
                   business_email: settings.business_email,
+                  business_inami: settings.business_inami,
+                  business_bce: settings.business_bce,
                 })
               }
             />

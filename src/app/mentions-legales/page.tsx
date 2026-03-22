@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { getSettings } from "@/lib/settings";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,7 +8,10 @@ export const metadata: Metadata = {
   description: "Mentions légales et politique de confidentialité d'Edem-Care.",
 };
 
-export default function MentionsLegales() {
+export default async function MentionsLegales() {
+  const settings = await getSettings();
+  const businessEmail = settings.business_email || "contact@edem-care.be";
+
   return (
     <>
       <Navbar />
@@ -22,7 +26,7 @@ export default function MentionsLegales() {
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-muted-custom">
               Les informations juridiques et les engagements de confidentialité
-              d&apos;Edem-Care sont présentés ici dans un format plus lisible.
+              d&apos;{settings.business_name} sont présentés ici dans un format plus lisible.
             </p>
           </div>
 
@@ -32,19 +36,19 @@ export default function MentionsLegales() {
                 1. Éditeur du site
               </h2>
               <p className="text-sm leading-7 text-muted-custom">
-                <strong className="text-ink">Edem-Care</strong>
+                <strong className="text-ink">{settings.business_name}</strong>
                 <br />
-                Soins infirmiers à domicile
+                {settings.business_specialty}
                 <br />
-                Bruxelles, Belgique
+                {settings.business_zone}
                 <br />
-                Email : contact@edem-care.be
+                Email : {businessEmail}
                 <br />
-                Téléphone : +32 (0) 000 00 00 00
+                Téléphone : {settings.business_phone}
                 <br />
-                N° INAMI : à compléter
+                N° INAMI : {settings.business_inami || "—"}
                 <br />
-                N° BCE : à compléter
+                N° BCE : {settings.business_bce || "—"}
               </p>
             </section>
 
@@ -64,7 +68,7 @@ export default function MentionsLegales() {
               </h2>
               <p className="text-sm leading-7 text-muted-custom">
                 L&apos;ensemble du contenu de ce site (textes, images, logo,
-                design) est la propriété exclusive d&apos;Edem-Care ou de ses
+                design) est la propriété exclusive d&apos;{settings.business_name} ou de ses
                 partenaires. Toute reproduction, même partielle, est interdite
                 sans autorisation préalable.
               </p>
@@ -79,7 +83,7 @@ export default function MentionsLegales() {
                 4.1 Responsable du traitement
               </h3>
               <p className="text-sm leading-7 text-muted-custom">
-                Edem-Care est responsable du traitement des données personnelles
+                {settings.business_name} est responsable du traitement des données personnelles
                 collectées via ce site.
               </p>
 
@@ -127,7 +131,7 @@ export default function MentionsLegales() {
               </ul>
               <p className="mt-2 text-sm leading-7 text-muted-custom">
                 Pour exercer ces droits, contactez-nous à :
-                contact@edem-care.be
+                {businessEmail}
               </p>
             </section>
 
@@ -150,7 +154,7 @@ export default function MentionsLegales() {
               <p className="text-sm leading-7 text-muted-custom">
                 Les informations présentes sur ce site sont fournies à titre
                 indicatif. Elles ne remplacent en aucun cas un avis médical
-                professionnel. Edem-Care ne saurait être tenu responsable de
+                professionnel. {settings.business_name} ne saurait être tenu responsable de
                 l&apos;utilisation qui en est faite.
               </p>
             </section>

@@ -34,6 +34,7 @@ export const contactFormSchema = z.object({
   honeypot: z.string().max(0, "Spam détecté").optional(),
   turnstile_token: z.string().optional(),
   math_answer: z.string().optional(),
+  math_token: z.string().optional(),
 });
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;
@@ -65,6 +66,7 @@ export const bookingFormSchema = z.object({
   turnstile_token: z.string().optional(),
   honeypot: z.string().max(0, "Spam détecté").optional(),
   math_answer: z.string().optional(),
+  math_token: z.string().optional(),
 });
 
 export type BookingFormData = z.infer<typeof bookingFormSchema>;

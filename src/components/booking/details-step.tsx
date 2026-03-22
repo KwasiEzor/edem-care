@@ -34,9 +34,25 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileEnabled, setTurnstileEnabled] = useState(false);
   const [showMathFallback, setShowMathFallback] = useState(false);
+  const [mathChallenge, setMathChallenge] = useState<{ question: string; token: string } | null>(null);
 
   useEffect(() => {
     setTurnstileEnabled(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+    
+    // Fetch dynamic math challenge
+    const fetchChallenge = async () => {
+      try {
+        const res = await fetch('/api/security/challenge');
+        if (res.ok) {
+          const data = await res.json();
+          setMathChallenge(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch math challenge', err);
+      }
+    };
+
+    fetchChallenge();
     
     // Show math fallback if Turnstile hasn't succeeded after 6 seconds
     const timer = setTimeout(() => {
@@ -70,7 +86,8 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
     if (data.time_slot_start) setValue("time_slot_start", data.time_slot_start);
     if (data.time_slot_end) setValue("time_slot_end", data.time_slot_end);
     if (data.care_type) setValue("care_type", data.care_type as any);
-  }, [data, setValue]);
+    if (mathChallenge?.token) setValue("math_token", mathChallenge.token);
+  }, [data, setValue, mathChallenge]);
 
   const onFormSubmit = async (formData: BookingFormData) => {
     // If Turnstile is enabled, it's the primary, but we allow submission if math is filled
@@ -80,13 +97,36 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
     }
 
     setIsSubmitting(true);
+
+    // TRIPLE-LOCK Step 1: Pre-submission availability re-check
+    try {
+      const checkRes = await fetch(`/api/available-slots?date=${formData.date}`);
+      if (checkRes.ok) {
+        const { slots } = await checkRes.json();
+        const stillAvailable = (slots || []).some(
+          (s: any) => s.start_time.slice(0, 5) === formData.time_slot_start.slice(0, 5)
+        );
+        if (!stillAvailable) {
+          toast.error("Ce créneau n'est plus disponible", {
+            description: "Désolé, quelqu'un a réservé ce créneau entre-temps. Veuillez en choisir un autre.",
+          });
+          setIsSubmitting(false);
+          onBack(); // Send user back to time selection
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Availability pre-check failed, proceeding with submission anyway", err);
+    }
+
     try {
       const res = await fetch("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           ...formData, 
-          turnstile_token: turnstileToken || formData.turnstile_token 
+          turnstile_token: turnstileToken || formData.turnstile_token,
+          math_token: formData.math_token || mathChallenge?.token
         }),
       });
 
@@ -271,7 +311,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-muted-custom bg-white px-3 py-2 rounded-xl border border-slate-200">
-                    Combien font 3 + 4 ?
+                    Combien font {mathChallenge?.question || "..."} ?
                   </span>
                   <Input
                     id="math_answer"
@@ -279,6 +319,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
                     className="h-10 w-32 rounded-xl border-slate-200 bg-white px-4"
                     {...register("math_answer")}
                   />
+                  <input type="hidden" {...register("math_token")} />
                 </div>
               </div>
             )}
