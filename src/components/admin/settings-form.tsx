@@ -380,8 +380,8 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
                     )
                   }
                   placeholder="Tu es l'assistant virtuel d'Edem-Care, un service de soins infirmiers à domicile à Bruxelles..."
-                  rows={8}
-                  className="text-xs leading-relaxed"
+                  rows={12}
+                  className="text-xs leading-relaxed max-h-[350px] overflow-y-auto"
                 />
               </div>
             </div>
