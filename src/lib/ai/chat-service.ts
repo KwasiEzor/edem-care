@@ -46,69 +46,72 @@ export interface AIResponse {
 
 type Provider = "anthropic" | "openai" | "google";
 
-async function generateWithAnthropic(
-  model: string,
-  system: string,
-  messages: { role: "user" | "assistant"; content: string }[]
-): Promise<string> {
-  if (!env.ANTHROPIC_API_KEY) throw new Error("Anthropic API key missing");
-  const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-  const response = await anthropic.messages.create({
-    model: model || "claude-3-5-sonnet-latest",
-    max_tokens: 512,
-    system,
-    messages: messages.map((m) => ({
-      role: m.role,
-      content: m.content,
-    })),
-  });
-  return response.content[0].type === "text" ? response.content[0].text : "";
-}
-
-async function generateWithOpenAI(
-  model: string,
-  system: string,
-  messages: { role: "user" | "assistant"; content: string }[]
-): Promise<string> {
-  if (!env.OPENAI_API_KEY) throw new Error("OpenAI API key missing");
-  const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
-  const response = await openai.chat.completions.create({
-    model: model || "gpt-4o",
-    messages: [
-      { role: "system", content: system },
-      ...messages.map((m) => ({
-        role: m.role as "user" | "assistant",
+// Exported for testing purposes
+export const AI_PROVIDERS = {
+  async anthropic(
+    model: string,
+    system: string,
+    messages: { role: "user" | "assistant"; content: string }[]
+  ): Promise<string> {
+    if (!env.ANTHROPIC_API_KEY) throw new Error("Clé Anthropic manquante");
+    const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+    const response = await anthropic.messages.create({
+      model: model || "claude-3-5-sonnet-latest",
+      max_tokens: 512,
+      system,
+      messages: messages.map((m) => ({
+        role: m.role,
         content: m.content,
       })),
-    ],
-    max_tokens: 512,
-  });
-  return response.choices[0].message.content || "";
-}
+    });
+    return response.content[0].type === "text" ? response.content[0].text : "";
+  },
 
-async function generateWithGoogle(
-  model: string,
-  system: string,
-  messages: { role: "user" | "assistant"; content: string }[]
-): Promise<string> {
-  if (!env.GEMINI_API_KEY) throw new Error("Gemini API key missing");
-  const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-  const gemini = genAI.getGenerativeModel({ 
-    model: model || "gemini-1.5-flash",
-    systemInstruction: system,
-  });
-  
-  const chat = gemini.startChat({
-    history: messages.slice(0, -1).map(m => ({
-      role: m.role === "user" ? "user" : "model",
-      parts: [{ text: m.content }],
-    })),
-  });
+  async openai(
+    model: string,
+    system: string,
+    messages: { role: "user" | "assistant"; content: string }[]
+  ): Promise<string> {
+    if (!env.OPENAI_API_KEY) throw new Error("Clé OpenAI manquante");
+    const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+    const response = await openai.chat.completions.create({
+      model: model || "gpt-4o",
+      messages: [
+        { role: "system", content: system },
+        ...messages.map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        })),
+      ],
+      max_tokens: 512,
+    });
+    return response.choices[0].message.content || "";
+  },
 
-  const lastMessage = messages[messages.length - 1].content;
-  const result = await chat.sendMessage(lastMessage);
-  return result.response.text();
-}
+  async google(
+    model: string,
+    system: string,
+    messages: { role: "user" | "assistant"; content: string }[]
+  ): Promise<string> {
+    if (!env.GEMINI_API_KEY) throw new Error("Clé Gemini manquante");
+    const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+    const gemini = genAI.getGenerativeModel({ 
+      model: model || "gemini-1.5-flash",
+      systemInstruction: system,
+    });
+    
+    const chat = gemini.startChat({
+      history: messages.slice(0, -1).map(m => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.content }],
+      })),
+    });
+
+    const lastMessage = messages[messages.length - 1].content;
+    const result = await chat.sendMessage(lastMessage);
+    return result.response.text();
+  }
+};
 
 export async function generateAIResponse(
   messages: { role: "user" | "assistant"; content: string }[]
@@ -124,26 +127,15 @@ export async function generateAIResponse(
   
   for (const provider of orderedProviders) {
     try {
-      // Check if API key exists for this provider
-      if (provider === "anthropic" && !env.ANTHROPIC_API_KEY) throw new Error("Clé Anthropic manquante");
-      if (provider === "openai" && !env.OPENAI_API_KEY) throw new Error("Clé OpenAI manquante");
-      if (provider === "google" && !env.GEMINI_API_KEY) throw new Error("Clé Gemini manquante");
-
       let rawText = "";
       let model = settings.chatbot_model;
 
       // Default models if the settings model doesn't match the provider
-      if (provider === "anthropic" && !model.includes("claude")) model = "claude-3-5-sonnet-latest";
-      if (provider === "openai" && !model.includes("gpt")) model = "gpt-4o";
-      if (provider === "google" && !model.includes("gemini")) model = "gemini-1.5-flash";
+      if (provider === "anthropic" && (!model || !model.includes("claude"))) model = "claude-3-5-sonnet-latest";
+      if (provider === "openai" && (!model || !model.includes("gpt"))) model = "gpt-4o";
+      if (provider === "google" && (!model || !model.includes("gemini"))) model = "gemini-1.5-flash";
 
-      if (provider === "anthropic") {
-        rawText = await generateWithAnthropic(model, systemPrompt, messages);
-      } else if (provider === "openai") {
-        rawText = await generateWithOpenAI(model, systemPrompt, messages);
-      } else if (provider === "google") {
-        rawText = await generateWithGoogle(model, systemPrompt, messages);
-      }
+      rawText = await AI_PROVIDERS[provider](model, systemPrompt, messages);
 
       const intentMatch = rawText.match(/\[BOOKING_INTENT:(\w+)\]/);
       const suggestedCareType = intentMatch ? intentMatch[1] : null;
