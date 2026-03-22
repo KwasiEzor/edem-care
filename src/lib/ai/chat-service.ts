@@ -131,7 +131,7 @@ export async function generateAIResponse(
       let model = settings.chatbot_model;
 
       // Default models if the settings model doesn't match the provider
-      if (provider === "anthropic" && (!model || !model.includes("claude"))) model = "claude-3-5-sonnet-latest";
+      if (provider === "anthropic" && (!model || !model.includes("claude"))) model = "claude-3-5-sonnet-20241022";
       if (provider === "openai" && (!model || !model.includes("gpt"))) model = "gpt-4o";
       if (provider === "google" && (!model || !model.includes("gemini"))) model = "gemini-1.5-flash";
 

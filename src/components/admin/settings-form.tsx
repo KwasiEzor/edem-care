@@ -65,8 +65,8 @@ async function saveSettings(data: Partial<AdminSettings>) {
 
 const MODEL_OPTIONS: Record<string, { label: string; value: string }[]> = {
   anthropic: [
-    { label: "Claude 3.5 Sonnet (Conseillé)", value: "claude-3-5-sonnet-latest" },
-    { label: "Claude 3 Opus (Puissant)", value: "claude-3-opus-latest" },
+    { label: "Claude 3.5 Sonnet (Conseillé)", value: "claude-3-5-sonnet-20241022" },
+    { label: "Claude 3 Opus (Puissant)", value: "claude-3-opus-20240229" },
     { label: "Claude 3 Haiku (Rapide)", value: "claude-3-haiku-20240307" },
   ],
   openai: [
@@ -94,7 +94,7 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
       // Auto-update model if provider changes to a valid default for that provider
       if (key === "chatbot_provider") {
         const provider = value as string;
-        if (provider === "anthropic") next.chatbot_model = "claude-3-5-sonnet-latest";
+        if (provider === "anthropic") next.chatbot_model = "claude-3-5-sonnet-20241022";
         if (provider === "openai") next.chatbot_model = "gpt-4o";
         if (provider === "google") next.chatbot_model = "gemini-1.5-flash";
       }
