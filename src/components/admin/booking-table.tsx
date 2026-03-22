@@ -83,9 +83,9 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
       const q = search.toLowerCase();
       list = list.filter(
         (b) =>
-          b.patient_name.toLowerCase().includes(q) ||
-          b.patient_email.toLowerCase().includes(q) ||
-          (CARE_TYPE_LABELS[b.care_type as CareType] || b.care_type)
+          (b.patient_name || "").toLowerCase().includes(q) ||
+          (b.patient_email || "").toLowerCase().includes(q) ||
+          (CARE_TYPE_LABELS[b.care_type as CareType] || b.care_type || "")
             .toLowerCase()
             .includes(q)
       );

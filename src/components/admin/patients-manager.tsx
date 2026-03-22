@@ -61,9 +61,10 @@ export function PatientsManager({ initialPatients }: PatientsManagerProps) {
     const q = search.toLowerCase();
     return patients.filter(
       (p) =>
-        p.first_name.toLowerCase().includes(q) ||
-        p.last_name.toLowerCase().includes(q) ||
-        (p.email && p.email.toLowerCase().includes(q))
+        (p.first_name || "").toLowerCase().includes(q) ||
+        (p.last_name || "").toLowerCase().includes(q) ||
+        (p.email || "").toLowerCase().includes(q) ||
+        (p.phone || "").toLowerCase().includes(q)
     );
   }, [patients, search]);
 
