@@ -127,7 +127,7 @@ export async function PUT(request: NextRequest) {
   if (error) {
     console.error("Settings update error:", error);
     return NextResponse.json(
-      { error: "Impossible de sauvegarder les paramètres" },
+      { error: `Erreur base de données: ${error.message}`, details: error },
       { status: 500 }
     );
   }
