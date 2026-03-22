@@ -45,14 +45,17 @@ export function useNotifications(initialData: Notification[] = []) {
     }
   }, []);
 
+  // Separate initial fetch to avoid setState in effect warnings
+  useEffect(() => {
+    if (initialData.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchNotifications();
+    }
+  }, [fetchNotifications, initialData.length]);
+
   useEffect(() => {
     const supabase = createClient();
     
-    // If no initial data, fetch once
-    if (initialData.length === 0) {
-      fetchNotifications();
-    }
-
     const channel = supabase
       .channel("global-notifications")
       .on(
@@ -100,7 +103,7 @@ export function useNotifications(initialData: Notification[] = []) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchNotifications, initialData.length, playSound, notifications]);
+  }, [initialData.length, playSound, notifications]);
 
   const markAsRead = async (id: string) => {
     const supabase = createClient();

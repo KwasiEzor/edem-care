@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { generateAIResponse } from './chat-service'
 import Anthropic from '@anthropic-ai/sdk'
 
@@ -6,7 +6,8 @@ vi.mock('@anthropic-ai/sdk')
 vi.mock('@/lib/settings', () => ({
   getSettings: vi.fn().mockResolvedValue({
     chatbot_model: 'claude-3-5-sonnet-latest',
-    chatbot_system_prompt: null
+    chatbot_system_prompt: null,
+    chatbot_provider: 'anthropic'
   })
 }))
 vi.mock('@/lib/env', () => ({
@@ -25,11 +26,9 @@ describe('AI Chat Service', () => {
   it('should identify a booking intent', async () => {
     const mockResponse = {
       content: [{ type: 'text', text: 'Bien sûr, je peux vous aider. [BOOKING_INTENT:prise_de_sang]' }]
-    }
+    };
     
-    ;(Anthropic as any).prototype.messages = {
-      create: vi.fn().mockResolvedValue(mockResponse)
-    }
+    (Anthropic.prototype.messages.create as Mock).mockResolvedValue(mockResponse)
 
     const result = await generateAIResponse(mockMessages)
 
@@ -43,11 +42,9 @@ describe('AI Chat Service', () => {
   it('should identify an emergency triage', async () => {
     const mockResponse = {
       content: [{ type: 'text', text: 'Appelez immédiatement le 112 ! [EMERGENCY_TRIAGE_112]' }]
-    }
+    };
     
-    ;(Anthropic as any).prototype.messages = {
-      create: vi.fn().mockResolvedValue(mockResponse)
-    }
+    (Anthropic.prototype.messages.create as Mock).mockResolvedValue(mockResponse)
 
     const result = await generateAIResponse([{ role: 'user', content: 'J’ai une forte douleur à la poitrine' }])
 
@@ -59,11 +56,9 @@ describe('AI Chat Service', () => {
   it('should handle response without tags', async () => {
     const mockResponse = {
       content: [{ type: 'text', text: 'Bonjour, comment allez-vous ?' }]
-    }
+    };
     
-    ;(Anthropic as any).prototype.messages = {
-      create: vi.fn().mockResolvedValue(mockResponse)
-    }
+    (Anthropic.prototype.messages.create as Mock).mockResolvedValue(mockResponse)
 
     const result = await generateAIResponse(mockMessages)
 

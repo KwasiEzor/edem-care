@@ -55,7 +55,7 @@ export async function sendWhatsAppTemplate({
   to: string;
   templateName: string;
   languageCode?: string;
-  components?: any[];
+  components?: Record<string, unknown>[];
 }) {
   const { accessToken, phoneNumberId } = getConfig();
 

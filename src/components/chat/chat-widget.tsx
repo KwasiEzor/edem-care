@@ -68,7 +68,14 @@ export function ChatWidget() {
         throw new Error(err.error || "Erreur");
       }
 
-      const data = await res.json();
+      const data = (await res.json()) as { 
+        message: string; 
+        metadata?: { 
+          booking_intent?: boolean; 
+          suggested_care_type?: string | null; 
+          is_emergency?: boolean;
+        } 
+      };
       const assistantMessage: Message = {
         role: "assistant",
         content: data.message,
@@ -165,13 +172,16 @@ export function ChatWidget() {
                           Urgence médicale détectée
                         </p>
                         <p className="text-xs text-red-600 mb-3 max-w-[250px]">
-                          Vos symptômes nécessitent une attention médicale immédiate. N'attendez pas.
+                          Vos symptômes nécessitent une attention médicale immédiate. N&apos;attendez pas.
                         </p>
                         <Button
                           size="sm"
+                          asChild
                           className="h-9 w-full rounded-full bg-red-600 text-white hover:bg-red-700 flex items-center justify-center font-bold"
-                          render={<a href="tel:112">Appeler le 112</a>}
-                        />                      </div>
+                        >
+                          <a href="tel:112">Appeler le 112</a>
+                        </Button>
+                      </div>
                     </div>
                   )}
 
@@ -187,16 +197,15 @@ export function ChatWidget() {
                         </p>
                         <Button
                           size="sm"
+                          asChild
                           className="mt-2 h-8 rounded-full bg-forest text-white hover:bg-forest/90"
-                          nativeButton={false}
-                          render={
-                            <Link
-                              href={`/rendez-vous?care_type=${msg.suggested_care_type}`}
-                            />
-                          }
                         >
-                          Prendre rendez-vous
-                          <ArrowRight className="ml-1 h-3 w-3" />
+                          <Link
+                            href={`/rendez-vous?care_type=${msg.suggested_care_type}`}
+                          >
+                            Prendre rendez-vous
+                            <ArrowRight className="ml-1 h-3 w-3" />
+                          </Link>
                         </Button>
                       </div>
                     </div>

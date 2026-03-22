@@ -28,13 +28,13 @@ import Link from "next/link";
 
 const TYPE_CONFIG: Record<
   NotificationType,
-  { label: string; icon: typeof Bell; color: string; link?: (data: any) => string }
+  { label: string; icon: typeof Bell; color: string; link?: (data: Record<string, unknown> | null) => string }
 > = {
   new_booking: {
     label: "Nouveau RDV",
     icon: CalendarDays,
     color: "text-forest",
-    link: (data: any) => data?.booking_id ? `/admin/rendez-vous` : "/admin/rendez-vous",
+    link: (data) => data?.booking_id ? `/admin/rendez-vous` : "/admin/rendez-vous",
   },
   new_contact: {
     label: "Nouveau message",
@@ -84,7 +84,7 @@ export function NotificationsCenter({
     <>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-4">
-          <Select value={filter} onValueChange={(v) => v && setFilter(String(v))}>
+          <Select value={filter} onValueChange={(v) => { if (v) setFilter(String(v)); }}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filtrer" />
             </SelectTrigger>
@@ -129,7 +129,7 @@ export function NotificationsCenter({
           filtered.map((notif) => {
             const config = TYPE_CONFIG[notif.type];
             const Icon = config.icon;
-            const link = config.link?.(notif.data);
+            const link = config.link?.(notif.data as Record<string, unknown>);
 
             return (
               <Card
@@ -179,14 +179,14 @@ export function NotificationsCenter({
                             <Button
                               variant="ghost"
                               size="sm"
+                              asChild
                               className="h-8 text-xs font-medium text-forest hover:text-forest hover:bg-forest/5"
-                              render={
-                                <Link href={link}>
-                                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                                  Voir les détails
-                                </Link>
-                              }
-                            />
+                            >
+                              <Link href={link}>
+                                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                                Voir les détails
+                              </Link>
+                            </Button>
                           )}
                           
                           {!notif.is_read && (

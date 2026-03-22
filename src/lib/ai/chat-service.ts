@@ -116,10 +116,10 @@ export async function generateAIResponse(
   
   const providers: Provider[] = ["anthropic", "openai", "google"];
   // Move preferred provider to the front
-  const preferred = (settings as any).chatbot_provider as Provider || "anthropic";
+  const preferred = (settings.chatbot_provider as Provider) || "anthropic";
   const orderedProviders = [preferred, ...providers.filter(p => p !== preferred)];
 
-  let lastError: any = null;
+  let lastError: Error | null = null;
   
   for (const provider of orderedProviders) {
     try {

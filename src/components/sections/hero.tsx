@@ -14,7 +14,7 @@ import {
   Star,
   Stethoscope,
 } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const trustMetrics = [

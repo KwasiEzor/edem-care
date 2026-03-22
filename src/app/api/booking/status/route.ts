@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the booking status
-    const { data: updatedBooking, error: updateError } = await supabase
+    const { error: updateError } = await supabase
       .from("bookings")
       .update({
         status,

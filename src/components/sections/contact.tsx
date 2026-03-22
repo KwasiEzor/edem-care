@@ -33,21 +33,19 @@ interface ContactProps {
 export function Contact({ businessPhone, businessEmail, businessZone }: ContactProps) {
   const [isPending, startTransition] = useTransition();
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [turnstileEnabled, setTurnstileEnabled] = useState(false);
+  const [turnstileEnabled] = useState(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
   const [showMathFallback, setShowMathFallback] = useState(false);
   const [mathChallenge, setMathChallenge] = useState<{ question: string; token: string } | null>(null);
 
   const phoneClean = businessPhone.replace(/[\s\-().]/g, "");
 
   useEffect(() => {
-    setTurnstileEnabled(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-    
     // Fetch dynamic math challenge
     const fetchChallenge = async () => {
       try {
         const res = await fetch('/api/security/challenge');
         if (res.ok) {
-          const data = await res.json();
+          const data = await res.json() as { question: string; token: string };
           setMathChallenge(data);
         }
       } catch (err) {
@@ -260,7 +258,7 @@ export function Contact({ businessPhone, businessEmail, businessZone }: ContactP
                   <div className="space-y-2">
                     <Label htmlFor="care_type">Type de soins (optionnel)</Label>
                     <Select
-                      onValueChange={(value) => setValue("care_type", value as any)}
+                      onValueChange={(value) => setValue("care_type", value as CareType)}
                     >
                       <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-slate-50/70 px-4">
                         <SelectValue placeholder="Sélectionnez" />
@@ -315,13 +313,13 @@ export function Contact({ businessPhone, businessEmail, businessZone }: ContactP
                         <span className="text-sm font-medium text-muted-custom bg-white px-3 py-2 rounded-xl border border-slate-200">
                           Combien font {mathChallenge?.question || "..."} ?
                         </span>
+                        <input type="hidden" {...register("math_token")} />
                         <Input
                           id="math_answer"
                           placeholder="Votre réponse"
                           className="h-10 w-32 rounded-xl border-slate-200 bg-white px-4"
                           {...register("math_answer")}
                         />
-                        <input type="hidden" {...register("math_token")} />
                       </div>
                     </div>
                   )}

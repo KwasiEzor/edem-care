@@ -45,8 +45,6 @@ import {
   CalendarDays,
   Phone,
   MapPin,
-  ExternalLink,
-  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -177,7 +175,7 @@ export function BookingTable({ initialBookings }: BookingTableProps) {
     <>
       {/* Toolbar */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Select value={filter} onValueChange={(v) => { v && setFilter(String(v)); setPage(1); }}>
+        <Select value={filter} onValueChange={(v) => { if (v) { setFilter(String(v)); setPage(1); } }}>
           <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>

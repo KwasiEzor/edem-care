@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Mic, MicOff, Loader2 } from "lucide-react";
+import { Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -11,16 +11,31 @@ interface VoiceNotesInputProps {
   className?: string;
 }
 
+interface SpeechRecognitionEvent extends Event {
+  results: {
+    [key: number]: {
+      [key: number]: {
+        transcript: string;
+      };
+    };
+  };
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
+
 export function VoiceNotesInput({ onTranscript, className }: VoiceNotesInputProps) {
   const [isListening, setIsVisible] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
 
+  // Initialize support on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        setIsSupported(true);
-      }
+    const win = window as unknown as { SpeechRecognition: unknown; webkitSpeechRecognition: unknown };
+    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsSupported(true);
     }
   }, []);
 
@@ -30,7 +45,8 @@ export function VoiceNotesInput({ onTranscript, className }: VoiceNotesInputProp
       return;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const win = window as unknown as { SpeechRecognition: unknown; webkitSpeechRecognition: unknown };
+    const SpeechRecognition = (win.SpeechRecognition || win.webkitSpeechRecognition) as any;
     const recognition = new SpeechRecognition();
 
     recognition.lang = "fr-FR";
@@ -41,13 +57,13 @@ export function VoiceNotesInput({ onTranscript, className }: VoiceNotesInputProp
       recognition.start();
       setIsVisible(true);
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript;
         onTranscript(transcript);
         setIsVisible(false);
       };
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error("Speech recognition error", event.error);
         setIsVisible(false);
         toast.error("Une erreur est survenue lors de la dictée.");

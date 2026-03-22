@@ -20,7 +20,7 @@ export async function getBookings(): Promise<DALResult<(Booking & { patient_addr
 
   const result = (data || []).map(b => ({
     ...b,
-    patient_address: (b.patients as any)?.address || null
+    patient_address: (b.patients as Record<string, unknown>)?.address as string | null || null
   })) as (Booking & { patient_address?: string | null })[];
 
   return { data: result, error: null };

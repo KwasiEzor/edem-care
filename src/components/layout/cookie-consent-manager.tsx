@@ -4,14 +4,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ShieldCheck, Settings, X, Check, Cookie } from "lucide-react";
+import { ShieldCheck, Settings, Cookie } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -24,15 +23,18 @@ import {
 export function CookieConsentManager() {
   const [isVisible, setIsVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [consent, setConsent] = useState<CookieConsent>(DEFAULT_CONSENT);
+  const [consent, setConsent] = useState<CookieConsent>(() => {
+    if (typeof window !== "undefined") {
+      return getStoredConsent() || DEFAULT_CONSENT;
+    }
+    return DEFAULT_CONSENT;
+  });
 
   useEffect(() => {
     const stored = getStoredConsent();
     if (!stored) {
       const timer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(timer);
-    } else {
-      setConsent(stored);
     }
 
     // Listen for manual triggers (e.g. from footer)

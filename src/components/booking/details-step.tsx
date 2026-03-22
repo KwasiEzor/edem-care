@@ -32,13 +32,11 @@ interface DetailsStepProps {
 export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [turnstileEnabled, setTurnstileEnabled] = useState(false);
+  const [turnstileEnabled] = useState(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
   const [showMathFallback, setShowMathFallback] = useState(false);
   const [mathChallenge, setMathChallenge] = useState<{ question: string; token: string } | null>(null);
 
   useEffect(() => {
-    setTurnstileEnabled(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-    
     // Fetch dynamic math challenge
     const fetchChallenge = async () => {
       try {
@@ -75,7 +73,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
       date: data.date,
       time_slot_start: data.time_slot_start,
       time_slot_end: data.time_slot_end,
-      care_type: data.care_type as any,
+      care_type: data.care_type as CareType, // Cast as CareType to satisfy Zod enum type vs string
       honeypot: "",
     },
   });
@@ -85,7 +83,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
     if (data.date) setValue("date", data.date);
     if (data.time_slot_start) setValue("time_slot_start", data.time_slot_start);
     if (data.time_slot_end) setValue("time_slot_end", data.time_slot_end);
-    if (data.care_type) setValue("care_type", data.care_type as any);
+    if (data.care_type) setValue("care_type", data.care_type as CareType);
     if (mathChallenge?.token) setValue("math_token", mathChallenge.token);
   }, [data, setValue, mathChallenge]);
 
@@ -102,9 +100,9 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
     try {
       const checkRes = await fetch(`/api/available-slots?date=${formData.date}`);
       if (checkRes.ok) {
-        const { slots } = await checkRes.json();
+        const { slots } = await checkRes.json() as { slots: { start_time: string }[] };
         const stillAvailable = (slots || []).some(
-          (s: any) => s.start_time.slice(0, 5) === formData.time_slot_start.slice(0, 5)
+          (s) => s.start_time.slice(0, 5) === formData.time_slot_start.slice(0, 5)
         );
         if (!stillAvailable) {
           toast.error("Ce créneau n'est plus disponible", {
@@ -130,7 +128,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
         }),
       });
 
-      const result = await res.json();
+      const result = await res.json() as { error?: string; message?: string; details?: unknown };
 
       if (!res.ok) {
         toast.error(result.error || "Erreur lors de la réservation", {
@@ -253,7 +251,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
                 defaultValue={data.care_type}
                 onValueChange={(value) => {
                   if (value) {
-                    setValue("care_type", value as any, { shouldValidate: true });
+                    setValue("care_type", value as CareType, { shouldValidate: true });
                   }
                 }}
               >
@@ -313,13 +311,13 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
                   <span className="text-sm font-medium text-muted-custom bg-white px-3 py-2 rounded-xl border border-slate-200">
                     Combien font {mathChallenge?.question || "..."} ?
                   </span>
+                  <input type="hidden" {...register("math_token")} />
                   <Input
                     id="math_answer"
                     placeholder="Votre réponse"
                     className="h-10 w-32 rounded-xl border-slate-200 bg-white px-4"
                     {...register("math_answer")}
                   />
-                  <input type="hidden" {...register("math_token")} />
                 </div>
               </div>
             )}

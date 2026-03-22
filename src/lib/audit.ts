@@ -6,8 +6,8 @@ interface AuditEvent {
   action: string;
   entityType: string;
   entityId?: string;
-  oldData?: any;
-  newData?: any;
+  oldData?: Record<string, unknown> | null;
+  newData?: Record<string, unknown> | null;
 }
 
 export async function logAudit(event: AuditEvent) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { AdminSettings, QuickReply, BusinessHoursSchedule } from "@/lib/settings";
+import type { AdminSettings, QuickReply } from "@/lib/settings";
 import { DAYS_OF_WEEK, DAY_LABELS } from "@/lib/settings";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,7 +34,6 @@ import {
   ShieldAlert,
   Clock,
   Zap,
-  Mail,
   Send,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -317,7 +316,7 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
               >
                 <Select
                   value={settings.chatbot_provider}
-                  onValueChange={(v) => v && update("chatbot_provider", v as any)}
+                  onValueChange={(v) => { if (v) update("chatbot_provider", v as AdminSettings["chatbot_provider"]); }}
                 >
                   <SelectTrigger id="chatbot_provider" className="w-full">
                     <SelectValue placeholder="Choisir un fournisseur" />
@@ -336,7 +335,7 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
               >
                 <Select
                   value={settings.chatbot_model}
-                  onValueChange={(v) => v && update("chatbot_model", v)}
+                  onValueChange={(v) => { if (v) update("chatbot_model", v); }}
                 >
                   <SelectTrigger id="chatbot_model" className="w-full">
                     <SelectValue placeholder="Sélectionner un modèle" />
