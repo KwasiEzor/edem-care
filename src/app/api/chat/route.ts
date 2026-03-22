@@ -109,12 +109,13 @@ export async function POST(request: NextRequest) {
         booking_intent: bookingIntent,
         suggested_care_type: suggestedCareType,
         is_emergency: isEmergency,
+        provider,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Chat API error:", error);
     return NextResponse.json(
-      { error: "Une erreur est survenue. Réessayez." },
+      { error: error.message || "Une erreur est survenue. Réessayez." },
       { status: 500 }
     );
   }
