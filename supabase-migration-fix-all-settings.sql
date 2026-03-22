@@ -1,4 +1,8 @@
--- Ensure all expected columns exist in admin_settings table
+-- ============================================================
+-- EDEM-CARE SCHEMA FIX & SYNCHRONIZATION
+-- ============================================================
+
+-- 1. Ensure admin_settings table is fully up to date
 ALTER TABLE public.admin_settings 
 ADD COLUMN IF NOT EXISTS business_inami TEXT,
 ADD COLUMN IF NOT EXISTS business_bce TEXT,
@@ -24,3 +28,40 @@ BEGIN
         ALTER TABLE public.admin_settings ADD CONSTRAINT admin_settings_chatbot_provider_check CHECK (chatbot_provider IN ('anthropic', 'openai', 'google'));
     END IF;
 END $$;
+
+-- 2. Ensure chat_transcripts table exists (AI conversation logs)
+CREATE TABLE IF NOT EXISTS public.chat_transcripts (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  session_id text NOT NULL,
+  messages jsonb NOT NULL DEFAULT '[]'::jsonb,
+  care_type_suggested text,
+  booking_intent boolean DEFAULT false,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+-- Ensure index exists
+CREATE INDEX IF NOT EXISTS idx_chat_transcripts_session_id ON public.chat_transcripts (session_id);
+CREATE INDEX IF NOT EXISTS idx_chat_transcripts_created_at ON public.chat_transcripts (created_at);
+
+-- RLS: public can INSERT/UPDATE, authenticated can SELECT
+ALTER TABLE public.chat_transcripts ENABLE ROW LEVEL SECURITY;
+
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'chat_transcripts' AND policyname = 'Anyone can insert chat transcripts') THEN
+        CREATE POLICY "Anyone can insert chat transcripts" ON public.chat_transcripts FOR INSERT TO anon, authenticated WITH CHECK (true);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'chat_transcripts' AND policyname = 'Anyone can update their own transcript') THEN
+        CREATE POLICY "Anyone can update their own transcript" ON public.chat_transcripts FOR UPDATE TO anon, authenticated USING (true);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'chat_transcripts' AND policyname = 'Admins can select chat transcripts') THEN
+        CREATE POLICY "Admins can select chat transcripts" ON public.chat_transcripts FOR SELECT TO authenticated USING (true);
+    END IF;
+END $$;
+
+-- Ensure metadata column exists if table already existed without it
+ALTER TABLE public.chat_transcripts ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;

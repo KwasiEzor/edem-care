@@ -84,12 +84,12 @@ export function ChatWidget() {
         is_emergency: data.metadata?.is_emergency,
       };
       setMessages((prev) => [...prev, assistantMessage]);
-    } catch {
+    } catch (err: any) {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "Désolé, une erreur est survenue. Veuillez réessayer.",
+          content: err.message || "Désolé, une erreur est survenue. Veuillez réessayer.",
         },
       ]);
     } finally {

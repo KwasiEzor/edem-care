@@ -41,9 +41,11 @@ export async function POST(request: NextRequest) {
 
     const { messages, sessionId } = parsed.data;
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    // Check if at least one API key is available
+    if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY && !process.env.GEMINI_API_KEY) {
+      console.error("AI Chat Error: No API keys configured (Anthropic, OpenAI, or Gemini)");
       return NextResponse.json(
-        { error: "Service de chat indisponible" },
+        { error: "Service de chat non configuré" },
         { status: 503 }
       );
     }
@@ -56,7 +58,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { displayMessage, bookingIntent, suggestedCareType, isEmergency } =
+    const { displayMessage, bookingIntent, suggestedCareType, isEmergency, provider } =
       await generateAIResponse(messages);
 
     // Upsert conversation to chat_transcripts
@@ -83,6 +85,7 @@ export async function POST(request: NextRequest) {
             messages: allMessages,
             care_type_suggested: suggestedCareType,
             booking_intent: bookingIntent,
+            metadata: { provider },
             updated_at: now,
           })
           .eq("session_id", sessionId);
@@ -92,9 +95,11 @@ export async function POST(request: NextRequest) {
           messages: allMessages,
           care_type_suggested: suggestedCareType,
           booking_intent: bookingIntent,
+          metadata: { provider },
         });
       }
-    } catch {
+    } catch (err) {
+      console.error("Failed to log chat transcript:", err);
       // Don't fail the response if logging fails
     }
 
