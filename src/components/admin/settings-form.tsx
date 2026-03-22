@@ -317,7 +317,7 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
               >
                 <Select
                   value={settings.chatbot_provider}
-                  onValueChange={(v) => update("chatbot_provider", v as any)}
+                  onValueChange={(v) => v && update("chatbot_provider", v as any)}
                 >
                   <SelectTrigger id="chatbot_provider" className="w-full">
                     <SelectValue placeholder="Choisir un fournisseur" />
@@ -336,7 +336,7 @@ export function SettingsForm({ initialSettings, whatsappStatus }: SettingsFormPr
               >
                 <Select
                   value={settings.chatbot_model}
-                  onValueChange={(v) => update("chatbot_model", v)}
+                  onValueChange={(v) => v && update("chatbot_model", v)}
                 >
                   <SelectTrigger id="chatbot_model" className="w-full">
                     <SelectValue placeholder="Sélectionner un modèle" />
