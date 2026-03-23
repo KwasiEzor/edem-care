@@ -1,4 +1,6 @@
+import "server-only";
 import { experimental_taintObjectReference } from "react";
+import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Booking } from "@/types/database";
 
@@ -7,43 +9,51 @@ export type DALResult<T> = {
   error: Error | null;
 };
 
-export async function getBookings(): Promise<DALResult<(Booking & { patient_address?: string | null })[]>> {
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("bookings")
-    .select("*, patients(address)")
-    .order("date", { ascending: false });
-    
-  if (error) {
-    return { data: null, error: new Error(error.message) };
-  }
+export const getBookings = unstable_cache(
+  async (): Promise<DALResult<(Booking & { patient_address?: string | null })[]>> => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("*, patients(address)")
+      .order("date", { ascending: false });
+      
+    if (error) {
+      return { data: null, error: new Error(error.message) };
+    }
 
-  const result = (data || []).map(b => ({
-    ...b,
-    patient_address: (b.patients as Record<string, unknown>)?.address as string | null || null
-  })) as (Booking & { patient_address?: string | null })[];
+    const result = (data || []).map(b => ({
+      ...b,
+      patient_address: (b.patients as Record<string, unknown>)?.address as string | null || null
+    })) as (Booking & { patient_address?: string | null })[];
 
-  return { data: result, error: null };
-}
+    return { data: result, error: null };
+  },
+  ["bookings-list"],
+  { tags: ["bookings"] }
+);
 
-export async function getBookingById(id: string): Promise<DALResult<Booking>> {
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("bookings")
-    .select("*")
-    .eq("id", id)
-    .single();
+export const getBookingById = unstable_cache(
+  async (id: string): Promise<DALResult<Booking>> => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-  if (error) {
-    return { data: null, error: new Error(error.message) };
-  }
+    if (error) {
+      return { data: null, error: new Error(error.message) };
+    }
 
-  if (data) {
-    experimental_taintObjectReference(
-      "Do not pass raw Booking PHI directly to Client Components.",
-      data
-    );
-  }
+    if (data) {
+      experimental_taintObjectReference(
+        "Do not pass raw Booking PHI directly to Client Components.",
+        data
+      );
+    }
 
-  return { data: data as Booking, error: null };
-}
+    return { data: data as Booking, error: null };
+  },
+  ["booking-detail"],
+  { tags: ["bookings"] }
+);

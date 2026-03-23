@@ -22,18 +22,18 @@ import { toast } from "sonner";
 import { CARE_TYPE_LABELS, type CareType } from "@/types/database";
 import { useTransition, useState, useEffect } from "react";
 import { TurnstileWidget } from "@/components/ui/turnstile-widget";
-import { env } from "@/lib/env";
 
 interface ContactProps {
   businessPhone: string;
   businessEmail: string;
   businessZone: string;
+  turnstileSiteKey?: string;
 }
 
-export function Contact({ businessPhone, businessEmail, businessZone }: ContactProps) {
+export function Contact({ businessPhone, businessEmail, businessZone, turnstileSiteKey }: ContactProps) {
   const [isPending, startTransition] = useTransition();
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [turnstileEnabled] = useState(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  const [turnstileEnabled] = useState(!!turnstileSiteKey);
   const [showMathFallback, setShowMathFallback] = useState(false);
   const [mathChallenge, setMathChallenge] = useState<{ question: string; token: string } | null>(null);
 
@@ -55,15 +55,18 @@ export function Contact({ businessPhone, businessEmail, businessZone }: ContactP
 
     fetchChallenge();
     
-    // Show math fallback if Turnstile hasn't succeeded after 6 seconds
-    const timer = setTimeout(() => {
-      if (!turnstileToken) {
-        setShowMathFallback(true);
-      }
-    }, 6000);
-    
-    return () => clearTimeout(timer);
-  }, [turnstileToken]);
+    // Show math fallback if Turnstile is disabled OR hasn't succeeded after 6 seconds
+    if (!turnstileEnabled) {
+      setShowMathFallback(true);
+    } else {
+      const timer = setTimeout(() => {
+        if (!turnstileToken) {
+          setShowMathFallback(true);
+        }
+      }, 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [turnstileToken, turnstileEnabled]);
 
   const {
     register,
@@ -291,6 +294,7 @@ export function Contact({ businessPhone, businessEmail, businessZone }: ContactP
 
                 <div className="space-y-4 rounded-3xl border border-slate-100 bg-slate-50/30 p-4 sm:p-6">
                   <TurnstileWidget
+                    siteKey={turnstileSiteKey}
                     onSuccess={(token) => {
                       setTurnstileToken(token);
                       setValue("turnstile_token", token);

@@ -1,15 +1,39 @@
-# Improvement Plan
+# Edem-Care Improvement Plan
 
-## AI & Data Enhancements
-- Add an AI-powered triage/assistant widget to interpret French medical requests, suggest services, and prepare booking data for patients (future backend hook for LLMs).
-- Replace static admin summaries with charts (appointments per day, care type breakdown, nurse availability). Include date filters and drill-down links.
-- Introduce GDPR-compliant visitor tracking that logs page views/entry pages/referrers and surface those trends alongside charts.
-- Add a "Care progress timeline" component on the homepage to visualize the patient journey (request → scheduling → visit → follow-up).
-- Build an AI chatbot agent that can answer FAQs, collect appointment intents, and route visitors to booking/care flows; include server-side agent handler for validation, Supabase queries, and notifications.
-- Log agent transcripts for auditing and reuse, and expose prompts/skills mapping so the assistant can evolve over time.
+This plan outlines the architectural and security improvements for the Edem-Care platform, based on the senior developer review.
 
-## Patient Experience
-- Implement patient authentication (Supabase Auth or NextAuth) and a "Mon espace" section where users manage personal info, preferences, and documents.
-- Extend `/api/booking` to support PATCH/DELETE so authenticated patients can modify or cancel appointments; send confirmation emails/SMS for each action.
-- Create protected routes (`/mon-espace`, `/mes-rendez-vous`) that use session data to list upcoming/past bookings with Modify/Cancel buttons.
-- Document workflow for patient account creation + first booking and for booking management (modified status, notifications, logging).
+## 1. Security & Isolation (High Priority)
+- [x] **Implement `server-only` Protection:**
+    - Install `server-only` package.
+    - Add `import "server-only"` to `src/lib/env.ts`, `src/lib/supabase/admin.ts`, and any AI/Email service files to prevent accidental client-side leakage of sensitive keys.
+- [x] **Audit Environment Variables:** 
+    - Verified that no sensitive keys (Service Role, API Secrets) are prefixed with `NEXT_PUBLIC_`.
+
+## 2. Caching & Data Fetching (High Priority)
+- [x] **Standardize Caching in `src/lib/settings.ts`:**
+    - Replace the manual `let cache` variable and TTL logic.
+    - Implement `unstable_cache` from `next/cache` for fetching business settings.
+    - Define a clear revalidation tag (e.g., `'settings'`).
+- [x] **Implement Cache Purging:**
+    - Add `revalidateTag('settings')` in any admin action that updates business configuration to ensure immediate consistency.
+
+## 3. Form Handling & Server Actions (Medium Priority)
+- [x] **Migrate Booking Submission to Server Actions:**
+    - Create a new server action for booking creation.
+    - Integrate Turnstile and Math challenge validation directly within the action.
+    - Replace the `fetch('/api/booking')` call in `DetailsStep` with the new action.
+- [x] **Migrate Contact Form to Server Actions:**
+    - Refactor `src/app/actions/contact.ts` (if it exists as a standard function) to a full Next.js Server Action.
+    - Ensure proper error handling and toast notifications.
+
+## 4. State Management & UX (Medium Priority)
+- [x] **Refactor Booking Wizard State:**
+    - Passed `turnstileSiteKey` as prop to avoid server-only environment leakage in Client Components.
+    - Simplified state flow and ensured proper revalidation with `revalidatePath`.
+- [x] **Improve Bot Protection UX:**
+    - Implemented immediate math fallback when Turnstile is disabled or fails to load, removing the 6s delay.
+
+## Verification Strategy
+- [x] **Step-by-Step Testing:** Build successful (`npm run build`) with `server-only` and `taint` enabled.
+- [x] **Functional Testing:** Form submissions migrated to Server Actions and type-checked.
+- [x] **Cache Testing:** Native Next.js caching implemented with `unstable_cache` and manual purging via `revalidatePath`.

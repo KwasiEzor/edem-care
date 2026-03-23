@@ -3,6 +3,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { BookingWizard } from "@/components/booking/booking-wizard";
 import { getSettings } from "@/lib/settings";
+import { env } from "@/lib/env";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +53,7 @@ export default async function RendezVousPage() {
               <BookingWizard
                 maxDays={settings.booking_max_days_ahead}
                 allowSundays={settings.booking_allow_sundays}
+                turnstileSiteKey={env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
               />
             </Suspense>
           </div>

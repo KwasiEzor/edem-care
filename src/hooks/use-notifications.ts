@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Notification } from "@/types/database";
 import { toast } from "sonner";
-import { getSettings } from "@/lib/settings";
+import type { AdminSettings } from "@/lib/settings";
 
 const NOTIFICATION_SOUND = "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
 
@@ -14,16 +14,24 @@ export function useNotifications(initialData: Notification[] = []) {
     initialData.filter((n) => !n.is_read).length
   );
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const settingsRef = useRef<AdminSettings | null>(null);
 
   // Initialize audio on first user interaction if possible, or just keep ref
   useEffect(() => {
     audioRef.current = new Audio(NOTIFICATION_SOUND);
+    
+    // Fetch settings for sound preference
+    fetch("/api/admin/settings")
+      .then(res => res.json())
+      .then(data => {
+        if (data.settings) settingsRef.current = data.settings;
+      })
+      .catch(err => console.error("Failed to fetch settings in hook:", err));
   }, []);
 
   const playSound = useCallback(async () => {
     try {
-      const settings = await getSettings();
-      if (settings.notify_sound_alerts && audioRef.current) {
+      if (settingsRef.current?.notify_sound_alerts && audioRef.current) {
         audioRef.current.play().catch(e => console.warn("Audio play blocked:", e));
       }
     } catch (e) {

@@ -1,5 +1,6 @@
 "use server";
 
+import "server-only";
 import { contactFormSchema, type ContactFormData } from "@/lib/validations";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";

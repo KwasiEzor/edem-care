@@ -1,3 +1,4 @@
+import "server-only";
 import { createHmac, timingSafeEqual } from "crypto";
 import { z } from "zod";
 import { env } from "@/lib/env";

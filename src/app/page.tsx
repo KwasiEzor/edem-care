@@ -10,6 +10,7 @@ import { Contact } from "@/components/sections/contact";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Phone } from "lucide-react";
 import { getSettings } from "@/lib/settings";
+import { env } from "@/lib/env";
 
 export default async function Home() {
   const settings = await getSettings();
@@ -27,6 +28,7 @@ export default async function Home() {
           businessPhone={settings.business_phone}
           businessEmail={settings.business_email || "contact@edem-care.be"}
           businessZone={settings.business_zone}
+          turnstileSiteKey={env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
         />
 
         <section className="py-20 lg:py-28">

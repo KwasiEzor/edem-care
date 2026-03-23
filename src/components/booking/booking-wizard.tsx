@@ -29,9 +29,14 @@ export type BookingData = {
 interface BookingWizardProps {
   maxDays?: number;
   allowSundays?: boolean;
+  turnstileSiteKey?: string;
 }
 
-export function BookingWizard({ maxDays = 60, allowSundays = false }: BookingWizardProps) {
+export function BookingWizard({ 
+  maxDays = 60, 
+  allowSundays = false,
+  turnstileSiteKey
+}: BookingWizardProps) {
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [bookingData, setBookingData] = useState<Partial<BookingData>>(() => {
@@ -149,6 +154,7 @@ export function BookingWizard({ maxDays = 60, allowSundays = false }: BookingWiz
           {currentStep === 3 && (
             <DetailsStep
               data={bookingData}
+              turnstileSiteKey={turnstileSiteKey}
               onSubmit={(details) => {
                 updateData(details);
                 setIsComplete(true);

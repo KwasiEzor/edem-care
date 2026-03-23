@@ -1,3 +1,4 @@
+import "server-only";
 import { getSettings } from "@/lib/settings";
 import type { Booking } from "@/types/database";
 import type { PatientNotificationEvent } from "./messages";

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Turnstile, type TurnstileProps } from "@marsidev/react-turnstile";
-import { env } from "@/lib/env";
 import { ShieldCheck, ShieldAlert, Loader2, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TurnstileWidgetProps extends Omit<TurnstileProps, "siteKey"> {
+  siteKey?: string;
   onSuccess?: (token: string) => void;
   onExpire?: () => void;
   onError?: (error: string | Error) => void;
@@ -14,14 +14,20 @@ interface TurnstileWidgetProps extends Omit<TurnstileProps, "siteKey"> {
 
 type Status = "idle" | "verifying" | "success" | "error" | "expired";
 
-export function TurnstileWidget({ onSuccess, onExpire, onError, ...props }: TurnstileWidgetProps) {
+let warnedAboutMissingKey = false;
+
+export function TurnstileWidget({ siteKey: propSiteKey, onSuccess, onExpire, onError, ...props }: TurnstileWidgetProps) {
   const [status, setStatus] = useState<Status>("idle");
-  const siteKey = env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const siteKey = propSiteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+  useEffect(() => {
+    if (!siteKey && process.env.NODE_ENV === "development" && !warnedAboutMissingKey) {
+      console.warn("Turnstile site key missing. Check your .env file. Bot protection will fallback to math challenge or be disabled in local dev.");
+      warnedAboutMissingKey = true;
+    }
+  }, [siteKey]);
 
   if (!siteKey) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn("Turnstile site key missing. Check your .env file.");
-    }
     return null;
   }
 

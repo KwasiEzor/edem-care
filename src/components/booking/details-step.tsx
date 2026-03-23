@@ -21,18 +21,19 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import type { BookingData } from "./booking-wizard";
 import { TurnstileWidget } from "@/components/ui/turnstile-widget";
-import { env } from "@/lib/env";
+import { createBookingAction } from "@/app/actions/booking";
 
 interface DetailsStepProps {
   data: Partial<BookingData>;
   onSubmit: (details: Partial<BookingData>) => void;
   onBack: () => void;
+  turnstileSiteKey?: string;
 }
 
-export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
+export function DetailsStep({ data, onSubmit, onBack, turnstileSiteKey }: DetailsStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [turnstileEnabled] = useState(!!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  const [turnstileEnabled] = useState(!!turnstileSiteKey);
   const [showMathFallback, setShowMathFallback] = useState(false);
   const [mathChallenge, setMathChallenge] = useState<{ question: string; token: string } | null>(null);
 
@@ -52,15 +53,18 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
 
     fetchChallenge();
     
-    // Show math fallback if Turnstile hasn't succeeded after 6 seconds
-    const timer = setTimeout(() => {
-      if (!turnstileToken) {
-        setShowMathFallback(true);
-      }
-    }, 6000);
-    
-    return () => clearTimeout(timer);
-  }, [turnstileToken]);
+    // Show math fallback if Turnstile is disabled OR hasn't succeeded after 6 seconds
+    if (!turnstileEnabled) {
+      setShowMathFallback(true);
+    } else {
+      const timer = setTimeout(() => {
+        if (!turnstileToken) {
+          setShowMathFallback(true);
+        }
+      }, 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [turnstileToken, turnstileEnabled]);
 
   const {
     register,
@@ -118,21 +122,15 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
     }
 
     try {
-      const res = await fetch("/api/booking", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          ...formData, 
-          turnstile_token: turnstileToken || formData.turnstile_token,
-          math_token: formData.math_token || mathChallenge?.token
-        }),
+      const result = await createBookingAction({ 
+        ...formData, 
+        turnstile_token: turnstileToken || formData.turnstile_token,
+        math_token: formData.math_token || mathChallenge?.token
       });
 
-      const result = await res.json() as { error?: string; message?: string; details?: unknown };
-
-      if (!res.ok) {
+      if (!result.success) {
         toast.error(result.error || "Erreur lors de la réservation", {
-          description: result.message || (result.details ? JSON.stringify(result.details) : undefined),
+          description: result.details ? JSON.stringify(result.details) : undefined,
         });
         setIsSubmitting(false);
         return;
@@ -289,6 +287,7 @@ export function DetailsStep({ data, onSubmit, onBack }: DetailsStepProps) {
 
           <div className="space-y-4 rounded-3xl border border-slate-100 bg-slate-50/30 p-4 sm:p-6">
             <TurnstileWidget
+              siteKey={turnstileSiteKey}
               onSuccess={(token) => {
                 setTurnstileToken(token);
                 setValue("turnstile_token", token);

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { AdminSettings, QuickReply } from "@/lib/settings";
-import { DAYS_OF_WEEK, DAY_LABELS } from "@/lib/settings";
+import type { AdminSettings, QuickReply } from "@/lib/settings.client";
+import { DAYS_OF_WEEK, DAY_LABELS } from "@/lib/settings.client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

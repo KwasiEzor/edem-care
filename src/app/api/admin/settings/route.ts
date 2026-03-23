@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { invalidateSettingsCache } from "@/lib/settings";
+import { revalidatePath } from "next/cache";
+import { getSettings } from "@/lib/settings";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -77,21 +78,9 @@ export async function GET() {
     );
   }
 
-  const { data, error } = await supabase
-    .from("admin_settings")
-    .select("*")
-    .eq("id", "default")
-    .single();
+  const settings = await getSettings();
 
-  if (error) {
-    console.error("Settings fetch error:", error);
-    return NextResponse.json(
-      { error: "Impossible de charger les paramètres" },
-      { status: 500 }
-    );
-  }
-
-  return NextResponse.json({ settings: data });
+  return NextResponse.json({ settings });
 }
 
 export async function PUT(request: NextRequest) {
@@ -132,7 +121,7 @@ export async function PUT(request: NextRequest) {
     );
   }
 
-  invalidateSettingsCache();
+  revalidatePath("/", "layout");
 
   return NextResponse.json({ settings: data });
 }

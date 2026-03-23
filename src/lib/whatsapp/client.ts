@@ -1,3 +1,4 @@
+import "server-only";
 import { env } from "@/lib/env";
 
 const GRAPH_API_VERSION = "v21.0";

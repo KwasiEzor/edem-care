@@ -1,11 +1,15 @@
+"use server";
+
+import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { bookingFormSchema, type BookingFormData } from "@/lib/validations";
 import { getSettings } from "@/lib/settings";
-import { rateLimit } from "@/lib/rate-limit";
 import { validateBotProtection } from "@/lib/turnstile";
 import { env } from "@/lib/env";
 import type { Booking } from "@/types/database";
-import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { rateLimit } from "@/lib/rate-limit";
 
 const CREATE_BOOKING_RPC = "create_booking_atomic";
 const AVAILABLE_SLOTS_RPC = "get_available_slots";
@@ -21,17 +25,6 @@ type CreateBookingPayload = Pick<
   | "time_slot_end"
   | "patient_notes"
 >;
-
-type DatabaseErrorLike = {
-  code?: string | null;
-  details?: string | null;
-  hint?: string | null;
-  message: string;
-};
-
-type AvailableSlot = {
-  start_time: string;
-};
 
 class BookingCreationError extends Error {
   constructor(
@@ -49,11 +42,8 @@ function toHHMM(value: string) {
   return value.slice(0, 5);
 }
 
-function isMissingCreateBookingRpc(error: DatabaseErrorLike | null) {
-  if (!error) {
-    return false;
-  }
-
+function isMissingCreateBookingRpc(error: any) {
+  if (!error) return false;
   return (
     error.code === "PGRST202" ||
     error.message.includes("Could not find the function")
@@ -62,14 +52,9 @@ function isMissingCreateBookingRpc(error: DatabaseErrorLike | null) {
 
 function splitPatientName(fullName: string) {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
-
   if (parts.length <= 1) {
-    return {
-      firstName: "",
-      lastName: fullName.trim(),
-    };
+    return { firstName: "", lastName: fullName.trim() };
   }
-
   return {
     firstName: parts[0] ?? "",
     lastName: parts.slice(1).join(" ") || fullName.trim(),
@@ -82,9 +67,7 @@ async function createBookingWithoutRpc(
 ) {
   const { data: slots, error: slotsError } = await supabase.rpc(
     AVAILABLE_SLOTS_RPC,
-    {
-      target_date: payload.date,
-    }
+    { target_date: payload.date }
   );
 
   if (slotsError) {
@@ -97,8 +80,7 @@ async function createBookingWithoutRpc(
   }
 
   const slotIsAvailable = (slots ?? []).some(
-    (slot: AvailableSlot) =>
-      toHHMM(slot.start_time) === toHHMM(payload.time_slot_start)
+    (slot: any) => toHHMM(slot.start_time) === toHHMM(payload.time_slot_start)
   );
 
   if (!slotIsAvailable) {
@@ -141,7 +123,6 @@ async function createBookingWithoutRpc(
         patientByEmailError.message
       );
     }
-
     patientId = patientByEmail?.id ?? null;
   }
 
@@ -166,7 +147,6 @@ async function createBookingWithoutRpc(
         patientInsertError.message
       );
     }
-
     patientId = createdPatient.id;
   }
 
@@ -213,15 +193,11 @@ async function createBooking(
       p_date: String(payload.date),
       p_time_slot_start: String(payload.time_slot_start),
       p_time_slot_end: String(payload.time_slot_end),
-      p_patient_notes: payload.patient_notes
-        ? String(payload.patient_notes)
-        : null,
+      p_patient_notes: payload.patient_notes ? String(payload.patient_notes) : null,
     }
   );
 
-  if (!dbError) {
-    return booking as Booking;
-  }
+  if (!dbError) return booking as Booking;
 
   if (dbError.code === "P0001") {
     throw new BookingCreationError("Ce créneau n'est plus disponible", 409);
@@ -236,24 +212,14 @@ async function createBooking(
     );
   }
 
-  console.warn(
-    "[booking] create_booking_atomic unavailable, falling back to application-side booking creation"
-  );
-
   return createBookingWithoutRpc(supabase, payload);
 }
 
-export async function POST(request: NextRequest) {
+export async function createBookingAction(formData: BookingFormData) {
   try {
-    const body = await request.json();
-
-    const parsed = bookingFormSchema.safeParse(body);
+    const parsed = bookingFormSchema.safeParse(formData);
     if (!parsed.success) {
-      console.error("Booking validation error:", parsed.error.format());
-      return NextResponse.json(
-        { error: "Données invalides", details: parsed.error.format() },
-        { status: 400 }
-      );
+      return { success: false, error: "Données invalides", details: parsed.error.format() };
     }
 
     // Bot protection
@@ -265,128 +231,93 @@ export async function POST(request: NextRequest) {
     });
     
     if (!isBotValid) {
-      return NextResponse.json(
-        { error: "Validation anti-robot échouée. Veuillez remplir le défi mathématique si Turnstile ne s'affiche pas." },
-        { status: 403 }
-      );
+      return { success: false, error: "Validation anti-robot échouée. Veuillez vérifier les champs." };
     }
 
     const settings = await getSettings();
 
-    // Rate limit by IP
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      "unknown";
-    const { allowed } = rateLimit(ip, "booking", 5, 60 * 60 * 1000);
+    // Rate limit
+    const headerList = await headers();
+    const ip = headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    const { allowed } = rateLimit(ip, "booking-action", 5, 60 * 60 * 1000);
     if (!allowed) {
-      return NextResponse.json(
-        { error: "Trop de demandes. Réessayez plus tard." },
-        { status: 429 }
-      );
+      return { success: false, error: "Trop de demandes. Réessayez plus tard." };
     }
 
-    // Server-side date and timezone-safe validation (Europe/Brussels)
+    // Server-side date validation
     const { getBrusselsDate, compareWithBrusselsToday } = await import("@/lib/utils");
     const todayStr = getBrusselsDate();
     const comparison = compareWithBrusselsToday(parsed.data.date);
 
     if (comparison === -1) {
-      return NextResponse.json(
-        { error: "La date ne peut pas être dans le passé" },
-        { status: 400 }
-      );
+      return { success: false, error: "La date ne peut pas être dans le passé" };
     }
 
-    // Max days ahead validation
+    // Max days ahead
     const maxDate = new Date(todayStr);
     maxDate.setDate(maxDate.getDate() + settings.booking_max_days_ahead);
     const maxDateStr = maxDate.toLocaleDateString("en-CA", { timeZone: "Europe/Brussels" });
     
     if (parsed.data.date > maxDateStr) {
-      return NextResponse.json(
-        { error: `La date ne peut pas dépasser ${settings.booking_max_days_ahead} jours` },
-        { status: 400 }
-      );
+      return { success: false, error: `La date ne peut pas dépasser ${settings.booking_max_days_ahead} jours` };
     }
 
     const bookingDateObj = new Date(parsed.data.date + "T00:00:00");
     if (!settings.booking_allow_sundays && bookingDateObj.getDay() === 0) {
-      return NextResponse.json(
-        { error: "Les rendez-vous ne sont pas disponibles le dimanche" },
-        { status: 400 }
-      );
+      return { success: false, error: "Les rendez-vous ne sont pas disponibles le dimanche" };
     }
 
     const supabase = createAdminClient();
-
     let booking: Booking;
 
     try {
       booking = await createBooking(supabase, parsed.data);
-    } catch (error) {
-      if (error instanceof BookingCreationError) {
-        console.error("DB error:", error);
-        return NextResponse.json(
-          {
-            error: error.message,
-            message: error.details,
-            code: error.code,
-          },
-          { status: error.status }
-        );
-      }
-
-      throw error;
+    } catch (error: any) {
+      return { success: false, error: error.message || "Erreur lors de la création du rendez-vous" };
     }
 
-    // Send admin notification
-    try {
-      if (settings.notify_email_new_booking && env.RESEND_API_KEY) {
-        const { Resend } = await import("resend");
-        const { render } = await import("@react-email/components");
-        const { NewBookingAdminEmail } = await import("@/emails/new-booking-admin");
+    // Revalidate relevant data
+    revalidatePath("/admin/rendez-vous");
+
+    // Notifications (Fire and forget, we don't want to block the user)
+    (async () => {
+      try {
+        if (settings.notify_email_new_booking && env.RESEND_API_KEY) {
+          const { Resend } = await import("resend");
+          const { render } = await import("@react-email/components");
+          const { NewBookingAdminEmail } = await import("@/emails/new-booking-admin");
+          
+          const resend = new Resend(env.RESEND_API_KEY);
+          const emailHtml = await render(
+            NewBookingAdminEmail({
+              patientName: parsed.data.patient_name,
+              patientEmail: parsed.data.patient_email,
+              patientPhone: parsed.data.patient_phone,
+              careType: parsed.data.care_type,
+              date: parsed.data.date,
+              timeSlot: `${parsed.data.time_slot_start.slice(0, 5)} - ${parsed.data.time_slot_end.slice(0, 5)}`,
+              patientNotes: parsed.data.patient_notes,
+            })
+          );
+
+          await resend.emails.send({
+            from: "Edem-Care <notifications@edem-care.be>",
+            to: env.ADMIN_EMAIL!,
+            subject: `Nouvelle demande de RDV - ${parsed.data.patient_name}`,
+            html: emailHtml,
+          });
+        }
         
-        const resend = new Resend(env.RESEND_API_KEY);
-
-        const emailHtml = await render(
-          NewBookingAdminEmail({
-            patientName: parsed.data.patient_name,
-            patientEmail: parsed.data.patient_email,
-            patientPhone: parsed.data.patient_phone,
-            careType: parsed.data.care_type,
-            date: parsed.data.date,
-            timeSlot: `${parsed.data.time_slot_start.slice(0, 5)} - ${parsed.data.time_slot_end.slice(0, 5)}`,
-            patientNotes: parsed.data.patient_notes,
-          })
-        );
-
-        await resend.emails.send({
-          from: "Edem-Care <notifications@edem-care.be>",
-          to: env.ADMIN_EMAIL!,
-          subject: `Nouvelle demande de RDV - ${parsed.data.patient_name}`,
-          html: emailHtml,
-        });
+        const { notifyPatient } = await import("@/lib/notifications/patient-notifications");
+        await notifyPatient({ event: "booking_created", booking });
+      } catch (e) {
+        console.error("Post-booking notifications error:", e);
       }
-    } catch (emailError) {
-      console.error("Email error:", emailError);
-    }
+    })();
 
-    // Patient notification
-    try {
-      const { notifyPatient } = await import(
-        "@/lib/notifications/patient-notifications"
-      );
-      await notifyPatient({ event: "booking_created", booking });
-    } catch (e) {
-      console.error("Patient notification error:", e);
-    }
-
-    return NextResponse.json({ success: true, booking });
+    return { success: true, booking };
   } catch (error) {
-    console.error("Booking error:", error);
-    return NextResponse.json(
-      { error: "Une erreur inattendue s'est produite" },
-      { status: 500 }
-    );
+    console.error("Booking action error:", error);
+    return { success: false, error: "Une erreur inattendue s'est produite" };
   }
 }
